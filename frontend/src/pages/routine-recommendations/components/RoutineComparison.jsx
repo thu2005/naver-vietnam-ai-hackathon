@@ -65,10 +65,10 @@ const RoutineComparison = ({ routineType, priceRange }) => {
           </p>
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Routine Info */}
-        <div className="space-y-4">
-          <div className="flex items-center space-x-3">
+        <div className="glass-card p-6 bg-gradient-to-br">
+          <div className="flex items-center space-x-3 mb-4">
             <Icon
               name={data?.routine?.icon}
               size={20}
@@ -91,18 +91,6 @@ const RoutineComparison = ({ routineType, priceRange }) => {
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Độ khó:</span>
-              <span className="text-sm font-medium text-foreground">
-                {data?.routine?.difficulty}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Phù hợp:</span>
-              <span className="text-sm font-medium text-foreground">
-                {data?.routine?.suitability}
-              </span>
-            </div>
-            <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">
                 Thấy kết quả:
               </span>
@@ -114,8 +102,8 @@ const RoutineComparison = ({ routineType, priceRange }) => {
         </div>
 
         {/* Price Info */}
-        <div className="space-y-4">
-          <div className="flex items-center space-x-3">
+        <div className="glass-card p-6 bg-gradient-to-br">
+          <div className="flex items-center space-x-3 mb-4">
             <Icon name="DollarSign" size={20} className="text-green-600" />
             <h4 className="font-medium text-foreground">Thông tin ngân sách</h4>
           </div>

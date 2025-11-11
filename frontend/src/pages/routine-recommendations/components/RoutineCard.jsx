@@ -18,8 +18,8 @@ const RoutineCard = ({
 
   const getGradientClass = () => {
     return timeOfDay === "morning"
-      ? "from-amber-50/50 to-orange-50/50"
-      : "from-indigo-50/50 to-purple-50/50";
+      ? "from-amber-50/80 to-orange-50/80"
+      : "from-indigo-100/50 to-purple-100/80";
   };
 
   if (isLoading) {

@@ -7,6 +7,7 @@ import ProductModal from "./components/ProductModal";
 import RoutineComparison from "./components/RoutineComparison";
 import Icon from "../../components/AppIcon";
 import Button from "../../components/ui/Button";
+import AnalysisProgress from "./components/AnalysisProgress";
 
 const RoutineRecommendations = () => {
   const [routineType, setRoutineType] = useState("minimal");
@@ -16,6 +17,10 @@ const RoutineRecommendations = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalProducts, setModalProducts] = useState([]);
   const [isProductsLoading, setIsProductsLoading] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+  const [analysisProgress, setAnalysisProgress] = useState(0);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [currentStep, setCurrentStep] = useState("upload");
 
   // Mock routine data
   const routineData = {
@@ -320,6 +325,54 @@ const RoutineRecommendations = () => {
     }, 1000);
   };
 
+  // Handle analysis start with progress
+  const handleAnalysisStart = () => {
+    setIsAnalyzing(true);
+    setAnalysisProgress(0);
+    setShowResults(false);
+    setCurrentStep("upload");
+
+    // Progress simulation with steps matching AnalysisProgress
+    const progressSteps = [
+      { progress: 15, delay: 500, step: "upload" },
+      { progress: 35, delay: 900, step: "ocr" },
+      { progress: 60, delay: 1100, step: "analysis" },
+      { progress: 85, delay: 1000, step: "risk" },
+      { progress: 100, delay: 700, step: "complete" },
+    ];
+
+    progressSteps
+      .reduce((promise, stepData) => {
+        return promise.then(() => {
+          return new Promise((resolve) => {
+            setTimeout(() => {
+              setAnalysisProgress(stepData.progress);
+              setCurrentStep(stepData.step);
+              resolve();
+            }, stepData.delay);
+          });
+        });
+      }, Promise.resolve())
+      .then(() => {
+        // Analysis complete
+        setTimeout(() => {
+          setIsAnalyzing(false);
+          setShowResults(true);
+
+          // Auto scroll to results
+          setTimeout(() => {
+            const resultsSection = document.getElementById("results-section");
+            if (resultsSection) {
+              resultsSection.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+              });
+            }
+          }, 100);
+        }, 500);
+      });
+  };
+
   const currentRoutine = routineData?.[routineType] || routineData?.minimal;
 
   return (
@@ -363,125 +416,162 @@ const RoutineRecommendations = () => {
             priceRange={priceRange}
             setPriceRange={setPriceRange}
           />
+          {/* CTA Button */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+            <Button
+              variant="default"
+              size="lg"
+              onClick={handleAnalysisStart}
+              disabled={isAnalyzing}
+              className="bg-gradient-primary hover:opacity-90 text-white px-8 py-4 text-lg font-medium shadow-glass-lg animate-glass-float rounded-full"
+              iconName="Camera"
+              iconPosition="left"
+              iconSize={20}
+            >
+              {isAnalyzing ? "Đang phân tích..." : "Gợi ý quy trình"}
+            </Button>
+          </div>
 
-          {/* Routine Comparison */}
-          {routineType && priceRange && (
-            <RoutineComparison
-              routineType={routineType}
-              priceRange={priceRange}
-            />
+          {/* Analysis Progress */}
+          <AnalysisProgress
+            isAnalyzing={isAnalyzing}
+            progress={analysisProgress}
+            currentStep={currentStep}
+          />
+
+          {/* Results Section */}
+          {showResults && (
+            <div id="results-section">
+              {/* Routine Comparison */}
+              {routineType && priceRange && (
+                <RoutineComparison
+                  routineType={routineType}
+                  priceRange={priceRange}
+                />
+              )}
+
+              {/* Routine Cards */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+                <RoutineCard
+                  title="Quy trình buổi sáng"
+                  timeOfDay="morning"
+                  steps={currentRoutine?.morning}
+                  onCategoryClick={handleCategoryClick}
+                  isLoading={isLoading}
+                />
+
+                <RoutineCard
+                  title="Quy trình buổi tối"
+                  timeOfDay="evening"
+                  steps={currentRoutine?.evening}
+                  onCategoryClick={handleCategoryClick}
+                  isLoading={isLoading}
+                />
+              </div>
+
+              {/* Tips Section */}
+              <div className="glass-card p-6 mb-8">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
+                    <Icon name="Lightbulb" size={20} color="white" />
+                  </div>
+                  <h3 className="text-lg font-heading font-semibold text-foreground">
+                    Mẹo sử dụng quy trình hiệu quả
+                  </h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="flex items-start space-x-3 p-4 bg-white/10 rounded-lg">
+                    <Icon
+                      name="Clock"
+                      size={16}
+                      className="text-blue-600 mt-1"
+                    />
+                    <div>
+                      <h4 className="font-medium text-foreground text-sm">
+                        Thời gian chờ
+                      </h4>
+                      <p className="text-xs text-muted-foreground">
+                        Chờ 2-3 phút giữa các bước để sản phẩm thấm hoàn toàn
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start space-x-3 p-4 bg-white/10 rounded-lg">
+                    <Icon
+                      name="Droplets"
+                      size={16}
+                      className="text-teal-600 mt-1"
+                    />
+                    <div>
+                      <h4 className="font-medium text-foreground text-sm">
+                        Lượng sản phẩm
+                      </h4>
+                      <p className="text-xs text-muted-foreground">
+                        Sử dụng lượng vừa đủ, tránh lãng phí và gây bít tắc lỗ
+                        chân lông
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start space-x-3 p-4 bg-white/10 rounded-lg">
+                    <Icon
+                      name="TrendingUp"
+                      size={16}
+                      className="text-green-600 mt-1"
+                    />
+                    <div>
+                      <h4 className="font-medium text-foreground text-sm">
+                        Kiên trì
+                      </h4>
+                      <p className="text-xs text-muted-foreground">
+                        Duy trì ít nhất 4-6 tuần để thấy kết quả rõ rệt
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* CTA Section */}
+              <div className="text-center">
+                <div className="glass-card p-8">
+                  <h3 className="text-xl font-heading font-semibold text-foreground mb-4">
+                    Cần tư vấn thêm về quy trình?
+                  </h3>
+                  <p className="text-muted-foreground font-caption mb-6 max-w-md mx-auto">
+                    Chatbot AI của chúng tôi sẵn sàng giải đáp mọi thắc mắc về
+                    skincare và giúp bạn tối ưu hóa quy trình chăm sóc da.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <Button
+                      variant="default"
+                      onClick={() =>
+                        (window.location.href = "/skincare-chatbot")
+                      }
+                      iconName="MessageCircle"
+                      iconPosition="left"
+                      iconSize={20}
+                      className="rounded-full px-6 py-3"
+                    >
+                      Tư vấn với AI
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        (window.location.href = "/product-analysis")
+                      }
+                      iconName="Camera"
+                      iconPosition="left"
+                      iconSize={20}
+                      className="rounded-full px-6 py-3"
+                    >
+                      Phân tích sản phẩm
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
-
-          {/* Routine Cards */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-            <RoutineCard
-              title="Quy trình buổi sáng"
-              timeOfDay="morning"
-              steps={currentRoutine?.morning}
-              onCategoryClick={handleCategoryClick}
-              isLoading={isLoading}
-            />
-
-            <RoutineCard
-              title="Quy trình buổi tối"
-              timeOfDay="evening"
-              steps={currentRoutine?.evening}
-              onCategoryClick={handleCategoryClick}
-              isLoading={isLoading}
-            />
-          </div>
-
-          {/* Tips Section */}
-          <div className="glass-card p-6 mb-8">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
-                <Icon name="Lightbulb" size={20} color="white" />
-              </div>
-              <h3 className="text-lg font-heading font-semibold text-foreground">
-                Mẹo sử dụng quy trình hiệu quả
-              </h3>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="flex items-start space-x-3 p-4 bg-white/10 rounded-lg">
-                <Icon name="Clock" size={16} className="text-blue-600 mt-1" />
-                <div>
-                  <h4 className="font-medium text-foreground text-sm">
-                    Thời gian chờ
-                  </h4>
-                  <p className="text-xs text-muted-foreground">
-                    Chờ 2-3 phút giữa các bước để sản phẩm thấm hoàn toàn
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-3 p-4 bg-white/10 rounded-lg">
-                <Icon
-                  name="Droplets"
-                  size={16}
-                  className="text-teal-600 mt-1"
-                />
-                <div>
-                  <h4 className="font-medium text-foreground text-sm">
-                    Lượng sản phẩm
-                  </h4>
-                  <p className="text-xs text-muted-foreground">
-                    Sử dụng lượng vừa đủ, tránh lãng phí và gây bít tắc lỗ chân
-                    lông
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-3 p-4 bg-white/10 rounded-lg">
-                <Icon
-                  name="TrendingUp"
-                  size={16}
-                  className="text-green-600 mt-1"
-                />
-                <div>
-                  <h4 className="font-medium text-foreground text-sm">
-                    Kiên trì
-                  </h4>
-                  <p className="text-xs text-muted-foreground">
-                    Duy trì ít nhất 4-6 tuần để thấy kết quả rõ rệt
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* CTA Section */}
-          <div className="text-center">
-            <div className="glass-card p-8">
-              <h3 className="text-xl font-heading font-semibold text-foreground mb-4">
-                Cần tư vấn thêm về quy trình?
-              </h3>
-              <p className="text-muted-foreground font-caption mb-6 max-w-md mx-auto">
-                Chatbot AI của chúng tôi sẵn sàng giải đáp mọi thắc mắc về
-                skincare và giúp bạn tối ưu hóa quy trình chăm sóc da.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button
-                  variant="default"
-                  onClick={() => (window.location.href = "/skincare-chatbot")}
-                  iconName="MessageCircle"
-                  iconPosition="left"
-                  iconSize={20}
-                >
-                  Tư vấn với AI
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => (window.location.href = "/product-analysis")}
-                  iconName="Camera"
-                  iconPosition="left"
-                  iconSize={20}
-                >
-                  Phân tích sản phẩm
-                </Button>
-              </div>
-            </div>
-          </div>
         </main>
 
         {/* Product Modal */}
