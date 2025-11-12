@@ -11,25 +11,16 @@ const productSchema = new mongoose.Schema({
     },
     thumbnail_url: {
         type: String,
-        required: true
+        required: false
     },
     product_url: {
         type: String,
-        required: true
-    },
-    type: {
-        type: String,
-        required: true
+        required: false
     },
     category: {
         type: String,
         required: true,
         enum: ['Moisturizer', 'Cleanser', 'Face mask', 'Treatment', 'Eye cream', 'Sunscreen']
-    },
-    timeOfDay: {
-        type: String,
-        enum: ['day', 'night', 'both'],
-        default: 'both'
     },
     spf: {
         type: Number,
@@ -39,11 +30,6 @@ const productSchema = new mongoose.Schema({
     price: {
         type: Number,
         required: true
-    },
-    budgetTier: {
-        type: String,
-        required: true,
-        enum: ['low', 'medium', 'high']
     },
     rank: {
         type: Number,
@@ -67,7 +53,8 @@ const productSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-productSchema.index({ category: 1, budgetTier: 1, timeOfDay: 1 });
+productSchema.index({ category: 1, price: 1, rank: 1 });
+productSchema.index({ spf: 1 });
 productSchema.index({ combination_skin: 1, dry_skin: 1, oily_skin: 1, normal_skin: 1 });
 
 export default mongoose.model('Product', productSchema);
