@@ -1,13 +1,6 @@
 import Product from "../models/Product.js";
 import Routine from "../models/Routine.js";
-
-const skinFieldMap = {
-    'combination': 'combination_skin',
-    'dry': 'dry_skin',
-    'oily': 'oily_skin',
-    'normal': 'normal_skin',
-    'sensitive': 'sensitive_skin'
-};
+import { skinFieldMap } from "../utils/dataParser.js";
 
 const morningSteps = [
     { name: 'Cleanse', category: 'Cleanser' },
@@ -49,7 +42,7 @@ export async function generateRoutine(skinType) {
     const field = skinFieldMap[normalizedSkinType];
 
     if (!field) {
-        throw new Error(`Invalid skin type: ${skinType}. Must be one of: dry, oily, combination, normal`);
+        throw new Error(`Invalid skin type: ${skinType}. Must be one of: dry, oily, combination, normal, sensitive.`);
     }
 
     const morningRoutineSteps = await selectProductsForSteps(morningSteps, field);

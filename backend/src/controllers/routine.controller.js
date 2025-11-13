@@ -74,7 +74,7 @@ export const createRoutine = async (req, res) => {
     }
 }
 
-export const getRoutineByPriceRangeAndSkinType = async (req, res) => {
+export const getRoutineByPriceRange = async (req, res) => {
     try {
         const { minPrice, maxPrice, skinType } = req.query;
         if (!maxPrice) {
@@ -104,7 +104,7 @@ export const getRoutineByPriceRangeAndSkinType = async (req, res) => {
     }
 }
 
-export const getRoutineByPriceAndSkinType = async (req, res) => {
+export const getRoutineByPrice = async (req, res) => {
     try {
         const { price, skinType } = req.query;
         if (!price) {

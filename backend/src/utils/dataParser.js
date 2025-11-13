@@ -149,3 +149,11 @@ export const validateProduct = (product) => {
     errors
   };
 };
+
+export const skinFieldMap = {
+    'combination': 'combination_skin',
+    'dry': 'dry_skin',
+    'oily': 'oily_skin',
+    'normal': 'normal_skin',
+    'sensitive': 'sensitive_skin'
+};

@@ -1,4 +1,5 @@
 import Product from "../models/Product.js";
+import { skinFieldMap } from "../utils/dataParser.js";
 
 export const addProduct = async (req, res) => {
     try {
@@ -124,14 +125,6 @@ export const getProductsByUserSkinType = async (req, res) => {
         if (!skinType) {
             return res.status(400).json({ message: 'Skin type is required' });
         }
-        
-        const skinFieldMap = {
-            'combination': 'combination_skin',
-            'dry': 'dry_skin',
-            'oily': 'oily_skin',
-            'normal': 'normal_skin',
-            'sensitive': 'sensitive_skin'
-        };
         
         const field = skinFieldMap[skinType.toLowerCase()];
         if (!field) {
