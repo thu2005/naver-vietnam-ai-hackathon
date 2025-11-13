@@ -18,8 +18,8 @@ const RoutineCard = ({
 
   const getGradientClass = () => {
     return timeOfDay === "morning"
-      ? "from-amber-50/80 to-orange-50/80"
-      : "from-indigo-100/50 to-purple-100/80";
+      ? "from-pink-100/70 via-rose-50/80 to-amber-100/70"
+      : "from-sky-100/70 via-indigo-100/70 to-purple-200/90";
   };
 
   if (isLoading) {
@@ -38,7 +38,9 @@ const RoutineCard = ({
   }
 
   return (
-    <div className={`glass-card p-6 bg-gradient-to-br ${getGradientClass()}`}>
+    <div
+      className={`rounded-3xl glass-card p-6 bg-gradient-to-br ${getGradientClass()}`}
+    >
       <div className="flex items-center space-x-3 mb-6">
         <div className={`p-2 rounded-lg bg-white/20 ${getTimeColor()}`}>
           <Icon name={getTimeIcon()} size={24} />
@@ -49,8 +51,8 @@ const RoutineCard = ({
           </h3>
           <p className="text-sm text-muted-foreground font-caption">
             {timeOfDay === "morning"
-              ? "Bắt đầu ngày mới tươi tắn"
-              : "Phục hồi và nuôi dưỡng ban đêm"}
+              ? "Start your day fresh"
+              : "Recover and nourish at night"}
           </p>
         </div>
       </div>
@@ -58,7 +60,7 @@ const RoutineCard = ({
         {steps?.map((step, index) => (
           <div
             key={step?.id}
-            className="group cursor-pointer"
+            className=" bg-white/40 rounded-2xl group cursor-pointer"
             onClick={() => onCategoryClick(step)}
           >
             <div className="glass-button p-4 rounded-lg hover:scale-[1.02] transition-all duration-200">
@@ -101,12 +103,12 @@ const RoutineCard = ({
           <span className="flex items-center space-x-1">
             <Icon name="Timer" size={14} />
             <span>
-              Tổng thời gian: {steps?.length * 2}-{steps?.length * 3} phút
+              Total time: {steps?.length * 2}-{steps?.length * 3} minutes
             </span>
           </span>
           <span className="flex items-center space-x-1">
             <Icon name="Layers" size={14} />
-            <span>{steps?.length} bước</span>
+            <span>{steps?.length} steps</span>
           </span>
         </div>
       </div>

@@ -5,20 +5,20 @@ const RoutineComparison = ({ routineType, priceRange }) => {
   const getComparisonData = () => {
     const baseData = {
       minimal: {
-        steps: 3 - 5,
-        time: "5-8 phút",
-        difficulty: "Dễ dàng",
-        suitability: "Người bận rộn, mới bắt đầu",
-        results: "2-4 tuần",
+        steps: "3-5",
+        time: "5-8 minutes",
+        difficulty: "Easy",
+        suitability: "Busy individuals, beginners",
+        results: "2-4 weeks",
         icon: "Zap",
         color: "text-green-600",
       },
       comprehensive: {
-        steps: 7 - 10,
-        time: "15-25 phút",
-        difficulty: "Trung bình",
-        suitability: "Có kinh nghiệm, thời gian rảnh",
-        results: "1-2 tuần",
+        steps: "7-10",
+        time: "15-25 minutes",
+        difficulty: "Moderate",
+        suitability: "Experienced, with free time",
+        results: "1-2 weeks",
         icon: "Target",
         color: "text-blue-600",
       },
@@ -26,18 +26,18 @@ const RoutineComparison = ({ routineType, priceRange }) => {
 
     const priceData = {
       low: {
-        budget: "100K - 500K VNĐ",
-        quality: "Tốt",
+        budget: "100K - 500K VND",
+        quality: "Good",
         brands: "Local, drugstore",
       },
       medium: {
-        budget: "500K - 1.5M VNĐ",
-        quality: "Rất tốt",
+        budget: "500K - 1.5M VND",
+        quality: "Very good",
         brands: "Mid-range, K-beauty",
       },
       high: {
-        budget: "1.5M+ VNĐ",
-        quality: "Xuất sắc",
+        budget: "1.5M+ VND",
+        quality: "Excellent",
         brands: "Premium, luxury",
       },
     };
@@ -51,48 +51,52 @@ const RoutineComparison = ({ routineType, priceRange }) => {
   const data = getComparisonData();
 
   return (
-    <div className="glass-card p-6 mb-8">
+    <div className="glass-card p-6 mb-8 rounded-3xl">
       <div className="flex items-center space-x-3 mb-6">
         <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
           <Icon name="BarChart3" size={20} color="white" />
         </div>
         <div>
           <h3 className="text-lg font-heading font-semibold text-foreground">
-            Tổng quan quy trình được chọn
+            Overview of Selected Routine
           </h3>
           <p className="text-sm text-muted-foreground font-caption">
-            Thông tin chi tiết về lựa chọn của bạn
+            Detailed information about your selection
           </p>
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Routine Info */}
-        <div className="glass-card p-6 bg-gradient-to-br">
+        <div className="rounded-xl glass-card p-6 bg-gradient-to-br">
           <div className="flex items-center space-x-3 mb-4">
             <Icon
               name={data?.routine?.icon}
               size={20}
               className={data?.routine?.color}
             />
-            <h4 className="font-medium text-foreground">Thông tin quy trình</h4>
+            <h4 className="font-medium text-foreground">Routine Information</h4>
           </div>
 
           <div className="space-y-3 pl-8">
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Số bước:</span>
+              <span className="text-sm text-muted-foreground">
+                Number of steps:
+              </span>
               <span className="text-sm font-medium text-foreground">
-                {data?.routine?.steps} bước
+                {data?.routine?.steps} steps
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Thời gian:</span>
+              <span className="text-sm text-muted-foreground">
+                Time required:
+              </span>
               <span className="text-sm font-medium text-foreground">
                 {data?.routine?.time}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">
-                Thấy kết quả:
+                See results in:
               </span>
               <span className="text-sm font-medium text-foreground">
                 {data?.routine?.results}
@@ -102,29 +106,27 @@ const RoutineComparison = ({ routineType, priceRange }) => {
         </div>
 
         {/* Price Info */}
-        <div className="glass-card p-6 bg-gradient-to-br">
+        <div className="rounded-xl glass-card p-6 bg-gradient-to-br">
           <div className="flex items-center space-x-3 mb-4">
             <Icon name="DollarSign" size={20} className="text-green-600" />
-            <h4 className="font-medium text-foreground">Thông tin ngân sách</h4>
+            <h4 className="font-medium text-foreground">Budget Information</h4>
           </div>
 
           <div className="space-y-3 pl-8">
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Ngân sách:</span>
+              <span className="text-sm text-muted-foreground">Budget:</span>
               <span className="text-sm font-medium text-foreground">
                 {data?.price?.budget}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Chất lượng:</span>
+              <span className="text-sm text-muted-foreground">Quality:</span>
               <span className="text-sm font-medium text-foreground">
                 {data?.price?.quality}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">
-                Thương hiệu:
-              </span>
+              <span className="text-sm text-muted-foreground">Brands:</span>
               <span className="text-sm font-medium text-foreground">
                 {data?.price?.brands}
               </span>
@@ -136,12 +138,10 @@ const RoutineComparison = ({ routineType, priceRange }) => {
         <div className="flex items-start space-x-3 p-4 bg-blue-50/20 rounded-lg">
           <Icon name="Info" size={16} className="text-blue-600 mt-0.5" />
           <div className="text-sm text-muted-foreground">
-            <p className="font-medium text-foreground mb-1">
-              Lưu ý quan trọng:
-            </p>
+            <p className="font-medium text-foreground mb-1">Important Note:</p>
             <p>
-              Quy trình skincare hiệu quả nhất là quy trình bạn có thể duy trì
-              lâu dài. Hãy bắt đầu từ từ và điều chỉnh theo phản ứng của da.
+              The most effective skincare routine is the one you can maintain
+              long-term. Start simple and adjust based on your skin's response.
             </p>
           </div>
         </div>

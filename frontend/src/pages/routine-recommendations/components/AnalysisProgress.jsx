@@ -5,33 +5,33 @@ const AnalysisProgress = ({ isAnalyzing, progress, currentStep }) => {
   const analysisSteps = [
     {
       id: "upload",
-      label: "Đọc dữ liệu da",
+      label: "Reading skin data",
       icon: "User",
-      description: "Đang đọc thông tin da từ profile của bạn",
+      description: "Reading skin information from your profile",
     },
     {
       id: "ocr",
-      label: "Phân tích loại da",
+      label: "Analyzing skin type",
       icon: "ScanText",
-      description: "Phân tích tình trạng và nhu cầu của da",
+      description: "Analyzing skin condition and needs",
     },
     {
       id: "analysis",
-      label: "Xử lý quy trình",
+      label: "Processing routine",
       icon: "Beaker",
-      description: "Tạo quy trình phù hợp với loại da và ngân sách",
+      description: "Creating a routine suitable for your skin type and budget",
     },
     {
       id: "risk",
-      label: "Tối ưu hóa",
+      label: "Optimizing",
       icon: "Shield",
-      description: "Tối ưu hóa routine theo preferences",
+      description: "Optimizing the routine based on preferences",
     },
     {
       id: "complete",
-      label: "Hoàn thành",
+      label: "Completed",
       icon: "CheckCircle",
-      description: "Tạo quy trình skincare cá nhân hóa",
+      description: "Personalized skincare routine created",
     },
   ];
 
@@ -44,25 +44,28 @@ const AnalysisProgress = ({ isAnalyzing, progress, currentStep }) => {
     analysisSteps?.[currentStepIndex] || analysisSteps?.[0];
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="glass-card rounded-xl p-8 max-w-md w-full mx-auto">
+    <div className="fixed inset-0 bg-white/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="glass-card rounded-3xl p-8 max-w-md w-full mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 shadow-glass animate-pulse">
             <Icon name="Calendar" size={32} color="white" />
           </div>
           <h3 className="text-xl font-heading font-semibold gradient-text mb-2">
-            Đang tạo quy trình cho bạn
+            Creating a routine for you
           </h3>
           <p className="text-sm text-muted-foreground font-caption">
-            AI đang phân tích profile da và tạo quy trình skincare tối ưu
+            AI is analyzing your skin profile and creating an optimal skincare
+            routine
           </p>
         </div>
 
         {/* Progress Bar */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-foreground">Tiến độ</span>
+            <span className="text-sm font-medium text-foreground">
+              Progress
+            </span>
             <span className="text-sm text-muted-foreground font-data">
               {Math.round(progress)}%
             </span>

@@ -28,48 +28,48 @@ const RoutineRecommendations = () => {
       morning: [
         {
           id: 1,
-          category: "Sữa rửa mặt nhẹ nhàng",
-          description: "Làm sạch da mà không làm khô",
-          timing: "1-2 phút",
-          purpose: "Làm sạch",
+          category: "Gentle Cleanser",
+          description: "Cleanses skin without drying",
+          timing: "1-2 minutes",
+          purpose: "Cleansing",
         },
         {
           id: 2,
-          category: "Kem chống nắng",
-          description: "Bảo vệ da khỏi tia UV",
-          timing: "30 giây",
-          purpose: "Bảo vệ",
+          category: "Sunscreen",
+          description: "Protects skin from UV rays",
+          timing: "30 seconds",
+          purpose: "Protection",
         },
         {
           id: 3,
-          category: "Kem dưỡng ẩm",
-          description: "Cung cấp độ ẩm cần thiết",
-          timing: "1 phút",
-          purpose: "Dưỡng ẩm",
+          category: "Moisturizer",
+          description: "Provides essential hydration",
+          timing: "1 minute",
+          purpose: "Moisturizing",
         },
       ],
 
       evening: [
         {
           id: 4,
-          category: "Sữa rửa mặt sâu",
-          description: "Loại bỏ bụi bẩn và makeup",
-          timing: "2 phút",
-          purpose: "Làm sạch",
+          category: "Deep Cleanser",
+          description: "Removes dirt and makeup",
+          timing: "2 minutes",
+          purpose: "Cleansing",
         },
         {
           id: 5,
-          category: "Serum phục hồi",
-          description: "Nuôi dưỡng da ban đêm",
-          timing: "30 giây",
-          purpose: "Phục hồi",
+          category: "Recovery Serum",
+          description: "Nourishes skin overnight",
+          timing: "30 seconds",
+          purpose: "Recovery",
         },
         {
           id: 6,
-          category: "Kem dưỡng đêm",
-          description: "Dưỡng ẩm sâu qua đêm",
-          timing: "1 phút",
-          purpose: "Nuôi dưỡng",
+          category: "Night Cream",
+          description: "Deep hydration overnight",
+          timing: "1 minute",
+          purpose: "Nourishing",
         },
       ],
     },
@@ -77,97 +77,97 @@ const RoutineRecommendations = () => {
       morning: [
         {
           id: 1,
-          category: "Sữa rửa mặt pH cân bằng",
-          description: "Làm sạch nhẹ nhàng, cân bằng pH",
-          timing: "2 phút",
-          purpose: "Làm sạch",
+          category: "pH Balanced Cleanser",
+          description: "Gently cleanses, balances pH",
+          timing: "2 minutes",
+          purpose: "Cleansing",
         },
         {
           id: 2,
-          category: "Toner cân bằng",
-          description: "Chuẩn bị da cho các bước tiếp theo",
-          timing: "30 giây",
-          purpose: "Cân bằng",
+          category: "Toner",
+          description: "Prepares skin for next steps",
+          timing: "30 seconds",
+          purpose: "Balancing",
         },
         {
           id: 3,
           category: "Vitamin C Serum",
-          description: "Chống oxy hóa, làm sáng da",
-          timing: "1 phút",
-          purpose: "Chống lão hóa",
+          description: "Antioxidant, brightens skin",
+          timing: "1 minute",
+          purpose: "Anti-aging",
         },
         {
           id: 4,
-          category: "Kem dưỡng mắt",
-          description: "Chăm sóc vùng mắt nhạy cảm",
-          timing: "30 giây",
-          purpose: "Chăm sóc đặc biệt",
+          category: "Eye Cream",
+          description: "Cares for sensitive eye area",
+          timing: "30 seconds",
+          purpose: "Special care",
         },
         {
           id: 5,
-          category: "Kem dưỡng ẩm",
-          description: "Khóa ẩm và nuôi dưỡng",
-          timing: "1 phút",
-          purpose: "Dưỡng ẩm",
+          category: "Moisturizer",
+          description: "Locks in moisture and nourishes",
+          timing: "1 minute",
+          purpose: "Moisturizing",
         },
         {
           id: 6,
-          category: "Kem chống nắng SPF 50+",
-          description: "Bảo vệ toàn diện khỏi UV",
-          timing: "1 phút",
-          purpose: "Bảo vệ",
+          category: "Sunscreen SPF 50+",
+          description: "Comprehensive UV protection",
+          timing: "1 minute",
+          purpose: "Protection",
         },
       ],
 
       evening: [
         {
           id: 7,
-          category: "Dầu tẩy trang",
-          description: "Loại bỏ makeup và sunscreen",
-          timing: "2 phút",
-          purpose: "Tẩy trang",
+          category: "Cleansing Oil",
+          description: "Removes makeup and sunscreen",
+          timing: "2 minutes",
+          purpose: "Cleansing",
         },
         {
           id: 8,
-          category: "Sữa rửa mặt sâu",
-          description: "Làm sạch sâu lỗ chân lông",
-          timing: "2 phút",
-          purpose: "Làm sạch",
+          category: "Deep Cleanser",
+          description: "Deep cleans pores",
+          timing: "2 minutes",
+          purpose: "Cleansing",
         },
         {
           id: 9,
-          category: "Tẩy tế bào chết (2-3 lần/tuần)",
-          description: "Loại bỏ tế bào chết, làm mịn da",
-          timing: "1 phút",
-          purpose: "Tẩy tế bào chết",
+          category: "Exfoliator (2-3 times/week)",
+          description: "Removes dead skin cells, smooths skin",
+          timing: "1 minute",
+          purpose: "Exfoliating",
         },
         {
           id: 10,
-          category: "Toner phục hồi",
-          description: "Cân bằng và chuẩn bị da",
-          timing: "30 giây",
-          purpose: "Cân bằng",
+          category: "Recovery Toner",
+          description: "Balances and prepares skin",
+          timing: "30 seconds",
+          purpose: "Balancing",
         },
         {
           id: 11,
-          category: "Serum điều trị",
-          description: "Retinol hoặc niacinamide",
-          timing: "1 phút",
-          purpose: "Điều trị",
+          category: "Treatment Serum",
+          description: "Retinol or niacinamide",
+          timing: "1 minute",
+          purpose: "Treatment",
         },
         {
           id: 12,
-          category: "Kem dưỡng mắt đêm",
-          description: "Phục hồi vùng mắt qua đêm",
-          timing: "30 giây",
-          purpose: "Chăm sóc đặc biệt",
+          category: "Night Eye Cream",
+          description: "Repairs eye area overnight",
+          timing: "30 seconds",
+          purpose: "Special care",
         },
         {
           id: 13,
-          category: "Kem dưỡng đêm",
-          description: "Nuôi dưỡng và phục hồi sâu",
-          timing: "1 phút",
-          purpose: "Nuôi dưỡng",
+          category: "Night Cream",
+          description: "Nourishes and deeply repairs",
+          timing: "1 minute",
+          purpose: "Nourishing",
         },
       ],
     },
@@ -175,7 +175,7 @@ const RoutineRecommendations = () => {
 
   // Mock products data
   const mockProducts = {
-    "Sữa rửa mặt nhẹ nhàng": [
+    "Gentle Cleanser": [
       {
         id: 1,
         name: "CeraVe Foaming Facial Cleanser",
@@ -185,7 +185,11 @@ const RoutineRecommendations = () => {
         image: "https://images.unsplash.com/photo-1735286770188-de4c5131589a",
         imageAlt:
           "White bottle of CeraVe foaming facial cleanser with blue label on clean background",
-        benefits: ["Không làm khô da", "Chứa ceramides", "Phù hợp da nhạy cảm"],
+        benefits: [
+          "Does not dry out skin",
+          "Contains ceramides",
+          "Suitable for sensitive skin",
+        ],
       },
       {
         id: 2,
@@ -196,7 +200,7 @@ const RoutineRecommendations = () => {
         image: "https://images.unsplash.com/photo-1629198726018-604230bdb091",
         imageAlt:
           "Blue and white La Roche-Posay cleanser bottle with minimalist design",
-        benefits: ["Dành cho da nhạy cảm", "Không chứa xà phòng", "Làm dịu da"],
+        benefits: ["For sensitive skin", "Soap-free", "Soothes skin"],
       },
       {
         id: 3,
@@ -207,22 +211,22 @@ const RoutineRecommendations = () => {
         image: "https://images.unsplash.com/photo-1695561115616-b4b719f1a242",
         imageAlt:
           "Orange and white Neutrogena cleanser bottle with pump dispenser",
-        benefits: [
-          "Làm sạch nhẹ nhàng",
-          "Không gây kích ứng",
-          "Giá cả phải chăng",
-        ],
+        benefits: ["Gently cleanses", "Non-irritating", "Affordable"],
       },
       {
         id: 4,
-        name: "Eucerin DermatoCLEAN Mild Cleansing Milk",
+        name: "Eucerin DermatoCLEAN Mild Cleansing",
         brand: "Eucerin",
         price: 380000,
         rating: 4.4,
         image: "https://images.unsplash.com/photo-1689166972543-6ef3bfe2d827",
         imageAlt:
           "White Eucerin cleansing milk bottle with blue accents and professional packaging",
-        benefits: ["Sữa rửa mặt dịu nhẹ", "Loại bỏ makeup", "Không làm khô da"],
+        benefits: [
+          "Gentle cleanser",
+          "Removes makeup",
+          "Does not dry out skin",
+        ],
       },
       {
         id: 5,
@@ -233,15 +237,11 @@ const RoutineRecommendations = () => {
         image: "https://images.unsplash.com/photo-1721280964728-11a67056d4d6",
         imageAlt:
           "Clear Bioderma gel cleanser bottle with pink and white labeling",
-        benefits: [
-          "Dành cho da nhạy cảm",
-          "Công thức gel nhẹ",
-          "Không chứa paraben",
-        ],
+        benefits: ["For sensitive skin", "Light gel formula", "Paraben-free"],
       },
     ],
 
-    "Kem chống nắng": [
+    Sunscreen: [
       {
         id: 6,
         name: "Biore UV Aqua Rich Watery Essence SPF50+",
@@ -251,7 +251,7 @@ const RoutineRecommendations = () => {
         image: "https://images.unsplash.com/photo-1616750819456-5cdee9b85d22",
         imageAlt:
           "Blue Biore sunscreen tube with water droplet design and SPF50+ marking",
-        benefits: ["Kết cấu nước", "Thấm nhanh", "Không nhờn rít"],
+        benefits: ["Water-like texture", "Quick absorption", "Non-greasy"],
       },
       {
         id: 7,
@@ -262,7 +262,7 @@ const RoutineRecommendations = () => {
         image: "https://images.unsplash.com/photo-1618332192990-ae0bc9061593",
         imageAlt:
           "White La Roche-Posay sunscreen tube with orange accents and SPF60 label",
-        benefits: ["Bảo vệ UVA/UVB", "Chống nước", "Không gây mụn"],
+        benefits: ["UVA/UVB protection", "Water-resistant", "Non-comedogenic"],
       },
       {
         id: 8,
@@ -273,7 +273,7 @@ const RoutineRecommendations = () => {
         image: "https://images.unsplash.com/photo-1618332192990-ae0bc9061593",
         imageAlt:
           "White and orange Eucerin sunscreen bottle with oil control formula labeling",
-        benefits: ["Kiểm soát dầu", "Lâu trôi", "Phù hợp da dầu"],
+        benefits: ["Oil control", "Long-lasting", "Suitable for oily skin"],
       },
       {
         id: 9,
@@ -284,7 +284,11 @@ const RoutineRecommendations = () => {
         image: "https://images.unsplash.com/photo-1654973552952-d0c98a3e3388",
         imageAlt:
           "Yellow and white Neutrogena sunscreen tube with dry-touch technology branding",
-        benefits: ["Khô ráo", "Không để lại vệt trắng", "Chống nước 80 phút"],
+        benefits: [
+          "Dry touch",
+          "No white cast",
+          "Water-resistant for 80 minutes",
+        ],
       },
       {
         id: 10,
@@ -295,7 +299,7 @@ const RoutineRecommendations = () => {
         image: "https://images.unsplash.com/photo-1671789407725-5098c410f79e",
         imageAlt:
           "White Avène tinted sunscreen tube with mineral formula and SPF50+ protection",
-        benefits: ["Có màu tự nhiên", "100% khoáng chất", "Da nhạy cảm"],
+        benefits: ["Natural tint", "100% mineral", "For sensitive skin"],
       },
     ],
   };
@@ -318,8 +322,7 @@ const RoutineRecommendations = () => {
     // Simulate API call
     setTimeout(() => {
       const products =
-        mockProducts?.[category?.category] ||
-        mockProducts?.["Sữa rửa mặt nhẹ nhàng"];
+        mockProducts?.[category?.category] || mockProducts?.["Gentle Cleanser"];
       setModalProducts(products);
       setIsProductsLoading(false);
     }, 1000);
@@ -363,9 +366,16 @@ const RoutineRecommendations = () => {
           setTimeout(() => {
             const resultsSection = document.getElementById("results-section");
             if (resultsSection) {
-              resultsSection.scrollIntoView({
+              // Adjusted scroll behavior to account for header height
+              const headerOffset = 80; // Adjust this value based on your header height
+              const elementPosition =
+                resultsSection.getBoundingClientRect().top;
+              const offsetPosition =
+                elementPosition + window.scrollY - headerOffset;
+
+              window.scrollTo({
+                top: offsetPosition,
                 behavior: "smooth",
-                block: "start",
               });
             }
           }, 100);
@@ -378,14 +388,14 @@ const RoutineRecommendations = () => {
   return (
     <>
       <Helmet>
-        <title>Gợi ý quy trình chăm sóc da - SkinCare Analyzer</title>
+        <title>Skincare Routine Recommendations - SkinCare Analyzer</title>
         <meta
           name="description"
-          content="Nhận gợi ý quy trình chăm sóc da cá nhân hóa dựa trên loại da và ngân sách của bạn. Từ quy trình tối giản đến toàn diện."
+          content="Get personalized skincare routine recommendations based on your skin type and budget. From minimal to comprehensive routines."
         />
         <meta
           name="keywords"
-          content="quy trình skincare, chăm sóc da, gợi ý sản phẩm, routine skincare, skincare việt nam"
+          content="skincare routine, skincare recommendations, product suggestions, skincare Vietnam"
         />
       </Helmet>
       <div className="min-h-screen bg-gradient-to-br from-pink-50/30 via-white to-teal-50/30">
@@ -399,13 +409,13 @@ const RoutineRecommendations = () => {
                 <Icon name="Calendar" size={24} color="white" />
               </div>
               <h1 className="text-3xl lg:text-4xl font-heading font-bold gradient-text">
-                Gợi ý quy trình chăm sóc da
+                Skincare Routine Recommendations
               </h1>
             </div>
             <p className="text-lg text-muted-foreground font-caption max-w-2xl mx-auto">
-              Nhận gợi ý quy trình chăm sóc da cá nhân hóa dựa trên lối sống và
-              ngân sách của bạn. Từ quy trình tối giản đến toàn diện, chúng tôi
-              sẽ giúp bạn xây dựng routine hoàn hảo.
+              Get personalized skincare routine recommendations based on your
+              lifestyle and budget. From minimal to comprehensive routines, we
+              help you build the perfect routine.
             </p>
           </div>
 
@@ -417,18 +427,18 @@ const RoutineRecommendations = () => {
             setPriceRange={setPriceRange}
           />
           {/* CTA Button */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
             <Button
               variant="default"
               size="lg"
               onClick={handleAnalysisStart}
               disabled={isAnalyzing}
-              className="bg-gradient-primary hover:opacity-90 text-white px-8 py-4 text-lg font-medium shadow-glass-lg animate-glass-float rounded-full"
+              className="bg-gradient-primary hover:opacity-90 text-white px-8 py-4 text-lg font-medium shadow-glass-lg animate-glass-float rounded-3xl"
               iconName="Camera"
               iconPosition="left"
               iconSize={20}
             >
-              {isAnalyzing ? "Đang phân tích..." : "Gợi ý quy trình"}
+              {isAnalyzing ? "Analyzing..." : "Get Routine Suggestions"}
             </Button>
           </div>
 
@@ -453,7 +463,7 @@ const RoutineRecommendations = () => {
               {/* Routine Cards */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
                 <RoutineCard
-                  title="Quy trình buổi sáng"
+                  title="Morning Routine"
                   timeOfDay="morning"
                   steps={currentRoutine?.morning}
                   onCategoryClick={handleCategoryClick}
@@ -461,7 +471,7 @@ const RoutineRecommendations = () => {
                 />
 
                 <RoutineCard
-                  title="Quy trình buổi tối"
+                  title="Evening Routine"
                   timeOfDay="evening"
                   steps={currentRoutine?.evening}
                   onCategoryClick={handleCategoryClick}
@@ -470,13 +480,13 @@ const RoutineRecommendations = () => {
               </div>
 
               {/* Tips Section */}
-              <div className="glass-card p-6 mb-8">
+              <div className="rounded-3xl glass-card p-6 mb-8">
                 <div className="flex items-center space-x-3 mb-4">
                   <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
                     <Icon name="Lightbulb" size={20} color="white" />
                   </div>
                   <h3 className="text-lg font-heading font-semibold text-foreground">
-                    Mẹo sử dụng quy trình hiệu quả
+                    Tips for Effective Routine Usage
                   </h3>
                 </div>
 
@@ -489,10 +499,11 @@ const RoutineRecommendations = () => {
                     />
                     <div>
                       <h4 className="font-medium text-foreground text-sm">
-                        Thời gian chờ
+                        Waiting Time
                       </h4>
                       <p className="text-xs text-muted-foreground">
-                        Chờ 2-3 phút giữa các bước để sản phẩm thấm hoàn toàn
+                        Wait 2-3 minutes between steps to allow products to
+                        fully absorb.
                       </p>
                     </div>
                   </div>
@@ -505,11 +516,11 @@ const RoutineRecommendations = () => {
                     />
                     <div>
                       <h4 className="font-medium text-foreground text-sm">
-                        Lượng sản phẩm
+                        Product Amount
                       </h4>
                       <p className="text-xs text-muted-foreground">
-                        Sử dụng lượng vừa đủ, tránh lãng phí và gây bít tắc lỗ
-                        chân lông
+                        Use just the right amount to avoid waste and clogged
+                        pores.
                       </p>
                     </div>
                   </div>
@@ -522,10 +533,11 @@ const RoutineRecommendations = () => {
                     />
                     <div>
                       <h4 className="font-medium text-foreground text-sm">
-                        Kiên trì
+                        Consistency
                       </h4>
                       <p className="text-xs text-muted-foreground">
-                        Duy trì ít nhất 4-6 tuần để thấy kết quả rõ rệt
+                        Maintain the routine for at least 4-6 weeks to see
+                        noticeable results.
                       </p>
                     </div>
                   </div>
@@ -534,13 +546,13 @@ const RoutineRecommendations = () => {
 
               {/* CTA Section */}
               <div className="text-center">
-                <div className="glass-card p-8">
+                <div className="glass-card p-8 rounded-3xl">
                   <h3 className="text-xl font-heading font-semibold text-foreground mb-4">
-                    Cần tư vấn thêm về quy trình?
+                    Need more advice on your routine?
                   </h3>
                   <p className="text-muted-foreground font-caption mb-6 max-w-md mx-auto">
-                    Chatbot AI của chúng tôi sẵn sàng giải đáp mọi thắc mắc về
-                    skincare và giúp bạn tối ưu hóa quy trình chăm sóc da.
+                    Our AI chatbot is ready to answer all your skincare
+                    questions and help you optimize your routine.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <Button
@@ -551,21 +563,21 @@ const RoutineRecommendations = () => {
                       iconName="MessageCircle"
                       iconPosition="left"
                       iconSize={20}
-                      className="rounded-full px-6 py-3"
+                      className="rounded-3xl px-6 py-3"
                     >
-                      Tư vấn với AI
+                      Consult with AI
                     </Button>
                     <Button
                       variant="outline"
-                      onClick={() =>
-                        (window.location.href = "/product-analysis")
-                      }
+                      className="rounded-3xl border border-primary hover:bg-primary hover:text-primary-foreground active:bg-primary/80"
                       iconName="Camera"
                       iconPosition="left"
-                      iconSize={20}
-                      className="rounded-full px-6 py-3"
+                      iconSize={16}
+                      onClick={() => {
+                        window.location.href = "/product-analysis";
+                      }}
                     >
-                      Phân tích sản phẩm
+                      Analyze Products
                     </Button>
                   </div>
                 </div>

@@ -10,57 +10,57 @@ const FilterControls = ({
   const routineOptions = [
     {
       value: "minimal",
-      label: "Quy trình tối giản (3-5 bước)",
-      description: "Phù hợp cho người bận rộn",
+      label: "Minimal routine (3-5 steps)",
+      description: "Suitable for busy individuals",
     },
     {
       value: "comprehensive",
-      label: "Quy trình toàn diện (7-10 bước)",
-      description: "Chăm sóc da chuyên sâu",
+      label: "Comprehensive routine (7-10 steps)",
+      description: "Deep skincare routine",
     },
   ];
 
   const priceOptions = [
     {
       value: "low",
-      label: "Tiết kiệm (100.000 - 500.000 VNĐ)",
-      description: "Sản phẩm phù hợp túi tiền",
+      label: "Budget-friendly (100,000 - 500,000 VND)",
+      description: "Affordable products",
     },
     {
       value: "medium",
-      label: "Trung bình (500.000 - 1.500.000 VNĐ)",
-      description: "Chất lượng tốt, giá hợp lý",
+      label: "Mid-range (500,000 - 1,500,000 VND)",
+      description: "Good quality, reasonable price",
     },
     {
       value: "high",
-      label: "Cao cấp (1.500.000+ VNĐ)",
-      description: "Sản phẩm premium, hiệu quả cao",
+      label: "Premium (1,500,000+ VND)",
+      description: "High-end, effective products",
     },
   ];
 
   return (
-    <div className="glass-card p-6 mb-8">
+    <div className="glass-card p-6 mb-8 rounded-3xl">
       <div className="flex flex-col lg:flex-row gap-6">
         <div className="flex-1">
           <Select
-            label="Loại quy trình chăm sóc"
-            description="Chọn mức độ phức tạp phù hợp với lối sống của bạn"
+            label="Skincare routine type"
+            description="Choose the complexity level that suits your lifestyle"
             options={routineOptions}
             value={routineType}
             onChange={setRoutineType}
-            placeholder="Chọn loại quy trình..."
+            placeholder="Select routine type..."
             className="w-full"
           />
         </div>
 
         <div className="flex-1">
           <Select
-            label="Khoảng giá mong muốn"
-            description="Lựa chọn ngân sách phù hợp cho quy trình của bạn"
+            label="Desired price range"
+            description="Select a budget suitable for your routine"
             options={priceOptions}
             value={priceRange}
             onChange={setPriceRange}
-            placeholder="Chọn khoảng giá..."
+            placeholder="Select price range..."
             className="w-full"
           />
         </div>
