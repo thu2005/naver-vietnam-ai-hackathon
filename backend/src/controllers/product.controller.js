@@ -100,16 +100,26 @@ export const listProducts = async (req, res) => {
 
 export const getProductsByUVIndex = async (req, res) => {
     try {
-        const { uvIndex } = req.query;
+        const { uvIndex, skinType } = req.query;
         if (uvIndex === undefined) {
             return res.status(400).json({ message: 'UV Index is required' });
+        }
+        if (!skinType) {
+            return res.status(400).json({ message: 'skinType is required' });
+        }
+
+        const skinField = skinFieldMap[skinType.toLowerCase()];
+        if (!skinField) {
+            return res.status(400).json({
+                message: 'Invalid skin type. Must be one of: dry, oily, combination, normal, sensitive'
+            });
         }
 
         let query = {};
         if (uvIndex >= 3) {
-            query = { category: 'Sunscreen', spf: { $gte: 30 } };
+            query = { category: 'Sunscreen', spf: { $gte: 30 }, [skinField]: true };
         } else {
-            query = { category: 'Sunscreen' };
+            query = { category: 'Sunscreen', [skinField]: true };
         }
 
         const products = await Product.find(query).sort({ rank: 1 });
