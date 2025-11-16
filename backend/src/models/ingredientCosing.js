@@ -10,7 +10,6 @@ const ingredientCosingSchema = new mongoose.Schema({
     required: true,
     index: true
   },
-
   functions: [{
     primary: { type: String, required: true },
     subtype: { type: String }

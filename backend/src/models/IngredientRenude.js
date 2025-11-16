@@ -1,18 +1,18 @@
 import mongoose from 'mongoose';
 // model is built based on this dataset https://www.kaggle.com/datasets/amaboh/skin-care-product-ingredients-inci-list
 const ingredientRenudeSchema = new mongoose.Schema({
-  inci_name: {
+  name: {
     type: String,
     required: true,
   },
-  inci_normalized: {
+  name_normalized: {
     type: String,
     required: true,
     unique: true,
     index: true
   },
 
-  short_description: String,
+  description: String,
 
   benefits: {
     type: [String],
@@ -24,9 +24,15 @@ const ingredientRenudeSchema = new mongoose.Schema({
     default: []
   },
 
-  avoid_if: {
-    type: [String],
-    default: []
+  risk_level: {
+    type: String,
+    enum: ['No-risk', 'Low-risk', 'Moderate-risk', 'High-risk', 'Unknown'],
+    default: 'Unknown'
+  },
+
+  reason: {
+    type: String,
+    default: ''
   }
 
 }, { timestamps: true });

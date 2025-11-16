@@ -6,6 +6,7 @@ import csvParser from 'csv-parser';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import IngredientRenude from '../models/IngredientRenude.js';
+import { fetchRiskAssessmentFromLLM } from '../services/ingredientEnrichment.service.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -15,9 +16,9 @@ dotenv.config({ path: path.join(__dirname, '../../.env') });
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/skincare-app';
 
 /**
- * Normalize INCI name for search/comparison
+ * Normalize name for search/comparison
  */
-function normalizeInciName(name) {
+function normalizeName(name) {
   if (!name) return '';
   return name.trim().toLowerCase().replace(/\s+/g, ' ');
 }
@@ -183,12 +184,11 @@ async function seedRenudeIngredients() {
             }
 
             const ingredient = {
-              inci_name: cleanString(inciName.trim()),
-              inci_normalized: cleanString(normalizeInciName(inciName)),
-              short_description: cleanString(buildShortDescription(row)),
+              name: cleanString(inciName.trim()),
+              name_normalized: cleanString(normalizeName(inciName)),
+              description: cleanString(buildShortDescription(row)),
               benefits: extractBenefits(row.what_does_it_do).map(cleanString),
-              good_for: parseArrayField(row.who_is_it_good_for).map(cleanString),
-              avoid_if: parseArrayField(row.who_should_avoid).map(cleanString)
+              good_for: parseArrayField(row.who_is_it_good_for).map(cleanString)
             };
 
             ingredients.push(ingredient);
@@ -234,25 +234,66 @@ async function seedRenudeIngredients() {
     //     console.log(`...and ${ingredients.length - 10} more`);
     //   }
 
-      console.log('\nInserting ingredients into database...');
+      console.log('\nEnriching ingredients with LLM for risk assessment...');
+      
+      // Process in batches of 10 for LLM calls
+      const batchSize = 10;
+      const enrichedIngredients = [];
+      
+      for (let i = 0; i < ingredients.length; i += batchSize) {
+        const batch = ingredients.slice(i, i + batchSize);
+        const batchNames = batch.map(ing => ing.name);
+        
+        try {
+          console.log(`Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(ingredients.length / batchSize)}...`);
+          const llmResults = await fetchRiskAssessmentFromLLM(batchNames);
+          
+          // Merge LLM results with ingredient data
+          for (let j = 0; j < batch.length; j++) {
+            const ingredient = batch[j];
+            const llmData = llmResults[j] || {};
+            
+            enrichedIngredients.push({
+              ...ingredient,
+              risk_level: llmData.risk_level || 'Unknown',
+              reason: llmData.reason || 'Risk assessment not available'
+            });
+          }
+          
+          // Add delay to avoid rate limiting
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        } catch (error) {
+          console.warn(`Failed to enrich batch ${Math.floor(i / batchSize) + 1}, using defaults:`, error.message);
+          // Add ingredients with default risk values
+          batch.forEach(ingredient => {
+            enrichedIngredients.push({
+              ...ingredient,
+              risk_level: 'Unknown',
+              reason: 'LLM enrichment failed during seeding'
+            });
+          });
+        }
+      }
+
+      console.log('\nInserting enriched ingredients into database...');
       
       let successCount = 0;
       let failCount = 0;
       const insertErrors = [];
 
       // Insert one by one to handle duplicates gracefully
-      for (const ingredient of ingredients) {
+      for (const ingredient of enrichedIngredients) {
         try {
           await IngredientRenude.create(ingredient);
           successCount++;
           
           if (successCount % 100 === 0) {
-            console.log(`Inserted ${successCount}/${ingredients.length} ingredients...`);
+            console.log(`Inserted ${successCount}/${enrichedIngredients.length} ingredients...`);
           }
         } catch (error) {
           failCount++;
           insertErrors.push({
-            name: ingredient.inci_name,
+            name: ingredient.name,
             error: error.message
           });
         }
@@ -272,11 +313,13 @@ async function seedRenudeIngredients() {
       console.log('\n--- Sample Ingredients ---');
       const samples = await IngredientRenude.find().limit(3);
       samples.forEach(sample => {
-        console.log(`\nName: ${sample.inci_name}`);
-        console.log(`Normalized: ${sample.inci_normalized}`);
+        console.log(`\nName: ${sample.name}`);
+        console.log(`Normalized: ${sample.name_normalized}`);
+        console.log(`Description: ${sample.description.substring(0, 50)}...`);
         console.log(`Benefits: ${sample.benefits.slice(0, 2).join(', ')}${sample.benefits.length > 2 ? '...' : ''}`);
         console.log(`Good for: ${sample.good_for.join(', ')}`);
-        console.log(`Avoid if: ${sample.avoid_if.join(', ')}`);
+        console.log(`Risk Level: ${sample.risk_level}`);
+        console.log(`Reason: ${sample.reason}`);
       });
 
       console.log('\n✓ Seed completed successfully!');
