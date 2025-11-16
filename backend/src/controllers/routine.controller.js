@@ -1,47 +1,44 @@
-import { generateRoutine } from "../services/routine.service.js";
 import Routine from "../models/Routine.js";
 
-async function generateAndSaveRoutines(skinType) {
-    const { morning, night } = await generateRoutine(skinType);
-
-    const morningDoc = await Routine.create({
-        name: 'morning',
-        steps: morning.steps,
-        skinType: skinType.toLowerCase(),
-        totalPrice: morning.totalPrice
-    });
-
-    const nightDoc = await Routine.create({
-        name: 'night',
-        steps: night.steps,
-        skinType: skinType.toLowerCase(),
-        totalPrice: night.totalPrice
-    });
-
-    return { morningDoc, nightDoc };
-}
+const STRATEGY_ORDER = {
+    'minimal': 1,
+    'complete': 2,
+    'focus_treatment': 3,
+    'focus_hydration': 4,
+    'anti_aging': 5
+};
 
 export const getRoutine = async (req, res) => {
     try {
-        const { skinType } = req.query;
+        const { skinType, budgetRange, strategy } = req.query;
 
         if (!skinType) {
             return res.status(400).json({ message: 'skinType query parameter is required' });
         }
 
         const normalizedSkinType = skinType.toLowerCase();
+        const query = { skinType: normalizedSkinType };
 
-        let routines = await Routine.find({ skinType: normalizedSkinType }).populate('steps.product');
+        if (budgetRange) {
+            query.budgetRange = budgetRange;
+        }
+        if (strategy) {
+            query.strategy = strategy;
+        }
+
+        let routines = await Routine.find(query)
+            .populate('steps.products')
+            .lean();
+
+        routines.sort((a, b) => {
+            const orderA = STRATEGY_ORDER[a.strategy] || 999;
+            const orderB = STRATEGY_ORDER[b.strategy] || 999;
+            return orderA - orderB;
+        });
 
         if (routines.length === 0) {
-            const { morningDoc, nightDoc } = await generateAndSaveRoutines(normalizedSkinType);
-
-            await morningDoc.populate('steps.product');
-            await nightDoc.populate('steps.product');
-
-            return res.status(200).json({
-                message: 'Routines generated and saved',
-                routines: [morningDoc, nightDoc]
+            return res.status(404).json({
+                message: 'No routines found for the specified criteria. Please ensure routines are seeded in the database.'
             });
         }
 
@@ -55,50 +52,85 @@ export const getRoutine = async (req, res) => {
 
 export const createRoutine = async (req, res) => {
     try {
-        const { skinType } = req.body;
+        const { skinType, strategy, budgetRange } = req.body;
 
         if (!skinType) {
             return res.status(400).json({ message: 'skinType is required' });
         }
 
-        const { morningDoc, nightDoc } = await generateAndSaveRoutines(skinType);
+        const query = { skinType: skinType.toLowerCase() };
+
+        if (strategy) query.strategy = strategy;
+        if (budgetRange) query.budgetRange = budgetRange;
+
+        const routines = await Routine.find(query)
+            .populate('steps.products')
+            .lean();
+
+        routines.sort((a, b) => {
+            const orderA = STRATEGY_ORDER[a.strategy] || 999;
+            const orderB = STRATEGY_ORDER[b.strategy] || 999;
+            return orderA - orderB;
+        });
+
+        if (routines.length === 0) {
+            return res.status(404).json({
+                message: 'No routines found. Please ensure routines are seeded in the database.'
+            });
+        }
+
+        const morning = routines.filter(r => r.name === 'morning');
+        const night = routines.filter(r => r.name === 'night');
 
         res.status(200).json({
-            message: 'Routine generated successfully',
-            morning: morningDoc,
-            night: nightDoc
+            message: 'Routines retrieved successfully',
+            morning,
+            night
         });
     } catch (error) {
         console.error('Error in createRoutine:', error);
-        res.status(500).json({ message: 'Error generating routine', error: error.message });
+        res.status(500).json({ message: 'Error retrieving routine', error: error.message });
     }
 }
 
-export const getRoutineByPriceRange = async (req, res) => {
+export const getRoutineByBudgetRange = async (req, res) => {
     try {
-        const { minPrice, maxPrice, skinType } = req.query;
-        if (!maxPrice) {
-            return res.status(400).json({ message: 'maxPrice query parameter is required' });
+        const { budgetRange, skinType } = req.query;
+
+        if (!budgetRange) {
+            return res.status(400).json({ message: 'budgetRange query parameter is required (budget-friendly, mid-range, or premium)' });
         }
-        if (!minPrice) {
-            return res.status(400).json({ message: 'minPrice query parameter is required' });
-        }
-        const routines = await Routine.find({ totalPrice: { 
-            $gte: parseFloat(minPrice), 
-            $lte: parseFloat(maxPrice) }, 
-            skinType: skinType.toLowerCase() 
-        }).populate('steps.product');
-        if (routines.length > 0) {
-            return res.status(200).json(routines);
+        if (!skinType) {
+            return res.status(400).json({ message: 'skinType query parameter is required' });
         }
 
-        const { morningDoc, nightDoc } = await generateAndSaveRoutines(skinType);
+        const validBudgetRanges = ['budget-friendly', 'mid-range', 'premium'];
+        if (!validBudgetRanges.includes(budgetRange)) {
+            return res.status(400).json({
+                message: `Invalid budgetRange. Must be one of: ${validBudgetRanges.join(', ')}`
+            });
+        }
 
-        const filteredRoutines = [morningDoc, nightDoc].filter(r =>
-            r.totalPrice >= parseFloat(minPrice) && r.totalPrice <= parseFloat(maxPrice)
-        );
+        const routines = await Routine.find({
+            budgetRange: budgetRange,
+            skinType: skinType.toLowerCase()
+        })
+            .populate('steps.products')
+            .lean();
 
-        res.status(200).json(filteredRoutines);
+        routines.sort((a, b) => {
+            const orderA = STRATEGY_ORDER[a.strategy] || 999;
+            const orderB = STRATEGY_ORDER[b.strategy] || 999;
+            return orderA - orderB;
+        });
+
+        if (routines.length === 0) {
+            return res.status(404).json({
+                message: 'No routines found for the specified budget range and skin type.'
+            });
+        }
+
+        res.status(200).json(routines);
     } catch (error) {
         res.status(500).json({ message: 'Error retrieving routines', error: error.message });
     }
@@ -114,22 +146,33 @@ export const getRoutineByPrice = async (req, res) => {
             return res.status(400).json({ message: 'skinType query parameter is required' });
         }
 
+        const priceNum = parseFloat(price);
+        let budgetRange;
+        if (priceNum < 500000) {
+            budgetRange = 'budget-friendly';
+        } else if (priceNum < 1500000) {
+            budgetRange = 'mid-range';
+        } else {
+            budgetRange = 'premium';
+        }
+
         const routines = await Routine.find({
-            totalPrice: { $eq: parseFloat(price) },
+            budgetRange: budgetRange,
             skinType: skinType.toLowerCase()
-        }).populate('steps.product');
+        })
+            .populate('steps.products')
+            .lean();
+
+        routines.sort((a, b) => {
+            const orderA = STRATEGY_ORDER[a.strategy] || 999;
+            const orderB = STRATEGY_ORDER[b.strategy] || 999;
+            return orderA - orderB;
+        });
 
         if (routines.length === 0) {
-            const { morningDoc, nightDoc } = await generateAndSaveRoutines(skinType.toLowerCase());
-
-            await morningDoc.populate('steps.product');
-            await nightDoc.populate('steps.product');
-
-            const filteredRoutines = [morningDoc, nightDoc].filter(r =>
-                r.totalPrice <= parseFloat(price)
-            );
-
-            return res.status(200).json(filteredRoutines);
+            return res.status(404).json({
+                message: 'No routines found for the specified price range and skin type.'
+            });
         }
 
         res.status(200).json(routines);

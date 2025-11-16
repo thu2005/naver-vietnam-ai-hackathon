@@ -10,10 +10,9 @@ const mongoURI = process.env.MONGODB_URI;
 const SKIN_TYPES = ['combination', 'dry', 'oily', 'normal', 'sensitive'];
 
 const PRICE_RANGES = [
-    { name: 'budget', min: 0, max: 500000 },
-    { name: 'mid', min: 500000, max: 1500000 },
-    { name: 'premium', min: 1500000, max: 3000000 },
-    { name: 'luxury', min: 3000000, max: Infinity }
+    { name: 'budget-friendly', min: 0, max: 500000 },
+    { name: 'mid-range', min: 500000, max: 1500000 },
+    { name: 'premium', min: 1500000, max: Infinity }
 ];
 
 const MORNING_STEPS = [
@@ -57,13 +56,13 @@ async function getProductsForCategory(category, skinType, priceRange, options = 
     }
 
     const products = await Product.find(query)
-        .sort({ rank: 1, price: options.preferHighPrice ? -1 : 1 })
-        .limit(5);
+        .sort({ rank: 1 })
+        .limit(10);
 
     return products;
 }
 
-async function selectProductForStep(step, skinType, priceRange, usedProducts, strategy) {
+async function selectProductsForStep(step, skinType, priceRange, strategy) {
     const products = await getProductsForCategory(
         step.category,
         skinType,
@@ -71,48 +70,17 @@ async function selectProductForStep(step, skinType, priceRange, usedProducts, st
         { minSpf: step.minSpf }
     );
 
-    const availableProducts = products.filter(p => !usedProducts.has(p._id.toString()));
+    if (products.length === 0) return null;
 
-    if (availableProducts.length === 0 && products.length > 0) {
-        return products[Math.floor(Math.random() * Math.min(products.length, 3))];
-    }
+    const numProducts = Math.min(Math.max(3, products.length), 5);
+    const selectedProducts = products.slice(0, numProducts);
 
-    if (availableProducts.length === 0) return null;
-
-    let selectedProduct;
-    switch (strategy) {
-        case 'minimal':
-            selectedProduct = availableProducts[0]; // Cheapest, best rank
-            break;
-        case 'complete':
-            selectedProduct = availableProducts[Math.floor(availableProducts.length / 2)]; // Mid-range
-            break;
-        case 'focus_treatment':
-            selectedProduct = step.category === 'Treatment' 
-                ? availableProducts[availableProducts.length - 1] // Best for treatment
-                : availableProducts[0];
-            break;
-        case 'focus_hydration':
-            selectedProduct = step.category === 'Moisturizer' 
-                ? availableProducts[availableProducts.length - 1] // Best for moisturizer
-                : availableProducts[0];
-            break;
-        case 'anti_aging':
-            selectedProduct = step.category === 'Eye cream' 
-                ? availableProducts[availableProducts.length - 1] // Best for eye cream
-                : availableProducts[0];
-            break;
-        default:
-            selectedProduct = availableProducts[0];
-    }
-
-    return selectedProduct;
+    return selectedProducts.map(p => p._id);
 }
 
-async function generateRoutineVariation(routineType, skinType, priceRange, strategy, usedProducts) {
+async function generateRoutineVariation(routineType, skinType, priceRange, strategy) {
     const steps = routineType === 'morning' ? MORNING_STEPS : NIGHT_STEPS;
     const selectedSteps = [];
-    let totalPrice = 0;
 
     for (const step of steps) {
         if (strategy === 'minimal' && !step.required) continue;
@@ -121,15 +89,13 @@ async function generateRoutineVariation(routineType, skinType, priceRange, strat
         if (strategy === 'focus_hydration' && !step.required && step.category !== 'Moisturizer') continue;
         if (strategy === 'anti_aging' && !step.required && step.category !== 'Eye cream') continue;
 
-        const product = await selectProductForStep(step, skinType, priceRange, usedProducts, strategy);
+        const productIds = await selectProductsForStep(step, skinType, priceRange, strategy);
 
-        if (product) {
+        if (productIds && productIds.length > 0) {
             selectedSteps.push({
                 name: step.name,
-                product: product._id
+                products: productIds
             });
-            totalPrice += product.price || 0;
-            usedProducts.add(product._id.toString());
         } else if (step.required) {
             return null;
         }
@@ -141,13 +107,13 @@ async function generateRoutineVariation(routineType, skinType, priceRange, strat
         name: routineType,
         steps: selectedSteps,
         skinType: skinType,
-        totalPrice: Math.round(totalPrice)
+        strategy: strategy,
+        budgetRange: priceRange.name
     };
 }
 
 async function generateAllRoutines() {
     const routines = [];
-    const globalUsedProducts = new Set();
 
     console.log('Generating diverse routines...');
 
@@ -155,44 +121,39 @@ async function generateAllRoutines() {
         console.log(`\nGenerating routines for ${skinType} skin...`);
 
         for (const priceRange of PRICE_RANGES) {
-            console.log(`  Price range: ${priceRange.name} (${priceRange.min} - ${priceRange.max} VND)`);
+            console.log(`  Budget range: ${priceRange.name} (${priceRange.min} - ${priceRange.max === Infinity ? '∞' : priceRange.max} VND)`);
 
             for (const strategy of VARIATION_STRATEGIES) {
-                const usedInRoutineSet = new Set();
-
                 const morningRoutine = await generateRoutineVariation(
                     'morning',
                     skinType,
                     priceRange,
-                    strategy,
-                    usedInRoutineSet
+                    strategy
                 );
 
                 if (morningRoutine) {
                     routines.push(morningRoutine);
-                    console.log(`    ✓ Morning routine (${strategy}): ${morningRoutine.steps.length} steps, ${morningRoutine.totalPrice} VND`);
+                    const totalProducts = morningRoutine.steps.reduce((sum, step) => sum + step.products.length, 0);
+                    console.log(`    ✓ Morning routine (${strategy}): ${morningRoutine.steps.length} steps, ${totalProducts} products recommended`);
                 }
 
-                const nightUsedSet = new Set(usedInRoutineSet);
                 const nightRoutine = await generateRoutineVariation(
                     'night',
                     skinType,
                     priceRange,
-                    strategy,
-                    nightUsedSet
+                    strategy
                 );
 
                 if (nightRoutine) {
                     routines.push(nightRoutine);
-                    console.log(`    ✓ Night routine (${strategy}): ${nightRoutine.steps.length} steps, ${nightRoutine.totalPrice} VND`);
+                    const totalProducts = nightRoutine.steps.reduce((sum, step) => sum + step.products.length, 0);
+                    console.log(`    ✓ Night routine (${strategy}): ${nightRoutine.steps.length} steps, ${totalProducts} products recommended`);
                 }
-
-                usedInRoutineSet.forEach(id => globalUsedProducts.add(id));
             }
         }
     }
 
-    return { routines, uniqueProductsUsed: globalUsedProducts.size };
+    return { routines };
 }
 
 async function seed() {
@@ -210,7 +171,7 @@ async function seed() {
         await Routine.deleteMany({});
         console.log('Cleared existing routines');
 
-        const { routines, uniqueProductsUsed } = await generateAllRoutines();
+        const { routines } = await generateAllRoutines();
 
         if (routines.length > 0) {
             await Routine.insertMany(routines);
@@ -218,9 +179,8 @@ async function seed() {
             console.log(`📊 Statistics:`);
             console.log(`   - Total routines: ${routines.length}`);
             console.log(`   - Skin types covered: ${SKIN_TYPES.length}`);
-            console.log(`   - Price ranges: ${PRICE_RANGES.length}`);
+            console.log(`   - Budget ranges: ${PRICE_RANGES.length}`);
             console.log(`   - Variation strategies: ${VARIATION_STRATEGIES.length}`);
-            console.log(`   - Unique products used: ${uniqueProductsUsed}`);
             console.log(`   - Average routines per skin type: ${Math.round(routines.length / SKIN_TYPES.length)}`);
 
             const morningCount = routines.filter(r => r.name === 'morning').length;
@@ -228,12 +188,22 @@ async function seed() {
             console.log(`   - Morning routines: ${morningCount}`);
             console.log(`   - Night routines: ${nightCount}`);
 
-            const prices = routines.map(r => r.totalPrice);
-            const avgPrice = Math.round(prices.reduce((a, b) => a + b, 0) / prices.length);
-            const minPrice = Math.min(...prices);
-            const maxPrice = Math.max(...prices);
-            console.log(`   - Price range: ${minPrice} - ${maxPrice} VND`);
-            console.log(`   - Average price: ${avgPrice} VND`);
+            // Calculate product statistics
+            const totalProductsRecommended = routines.reduce((sum, r) =>
+                sum + r.steps.reduce((stepSum, step) => stepSum + step.products.length, 0), 0);
+            const avgProductsPerRoutine = Math.round(totalProductsRecommended / routines.length);
+            console.log(`   - Total products recommended: ${totalProductsRecommended}`);
+            console.log(`   - Average products per routine: ${avgProductsPerRoutine}`);
+
+            // Budget range distribution
+            const budgetCounts = PRICE_RANGES.reduce((acc, range) => {
+                acc[range.name] = routines.filter(r => r.budgetRange === range.name).length;
+                return acc;
+            }, {});
+            console.log(`   - Budget range distribution:`);
+            Object.entries(budgetCounts).forEach(([range, count]) => {
+                console.log(`     • ${range}: ${count} routines`);
+            });
         } else {
             console.log('⚠️  No routines were generated. Check your product data.');
         }
