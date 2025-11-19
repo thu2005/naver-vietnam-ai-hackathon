@@ -1,41 +1,46 @@
-import dotenv from 'dotenv';
-dotenv.config();
 import ClovaChatbot from "../services/clovaChatbot.service.js";
 
-const secretKey = process.env.CLOVA_CHATBOT_SECRET_KEY || '';
-const apiUrl = process.env.CLOVA_CHATBOT_INVOKE_URL || '';
-const domainId = process.env.CLOVA__CHATBOT_DOMAIN_ID
-
 const chatbot = new ClovaChatbot(
-  apiUrl,
-  secretKey
+  process.env.CLOVA_CHATBOT_INVOKE_URL,
+  process.env.CLOVA_CHATBOT_SECRET_KEY
 );
 
-export const sendMessageToChatbot = async (req, res) => {
-    try {
-        const { message, userId } = req.body;
-        if (!userId) {
-            return res.status(400).json({ error: 'UserID is required.' });
-        }
-        const response = await chatbot.sendMessage(message, userId);
-        return res.status(200).json(response);
+export const sendMessage = async (req, res) => {
+  const { message, userId } = req.body;
+  if (!userId || !message) {
+    return res.status(400).json({ error: 'userId and message are required' });
+  }
 
-    } catch (error) {
-        res.status(500).json({ 
-            error: error.message,
-            details: error.response?.data 
-        });
-    }
-}
+  try {
+    const response = await chatbot.sendText(message, userId);
+    res.json(response);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
-export const getOpenMessage = async (req, res) => {
-    try {
-        const response = await chatbot.openMessage();
-        return res.status(200).json(response);
-    } catch (error) {
-        res.status(500).json({ 
-            error: error.message,
-            details: error.response?.data 
-        });
-    }
-}
+export const clickButton = async (req, res) => {
+  const { postback, userId, postbackFull } = req.body;
+
+  if (!userId || !postback) {
+    return res.status(400).json({ error: 'userId and postback are required' });
+  }
+
+  try {
+    const response = await chatbot.sendPostback(postback, userId, postbackFull);
+    res.json(response);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const welcome = async (req, res) => {
+  const { userId = 'guest' } = req.body;
+
+  try {
+    const response = await chatbot.sendWelcome(userId);
+    res.json(response);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

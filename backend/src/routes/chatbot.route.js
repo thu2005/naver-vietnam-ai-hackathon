@@ -1,9 +1,10 @@
 import express from 'express';
-import { sendMessageToChatbot, getOpenMessage } from '../controllers/chatbot.controller.js';
+import { sendMessage, welcome, clickButton } from '../controllers/chatbot.controller.js';
 
 const router = express.Router();
 
-router.post('/', sendMessageToChatbot);
-router.post('/open', getOpenMessage);
+router.post('/', sendMessage);
+router.post('/open', welcome);
+router.post('/click', clickButton);
 
 export default router;

@@ -3,7 +3,7 @@ import axios from 'axios';
 
 export default class ClovaChatbot {
   constructor(invokeUrl, secretKey) {
-    this.invokeUrl = invokeUrl;
+    this.invokeUrl = invokeUrl.endsWith('/') ? invokeUrl : invokeUrl + '/';
     this.secretKey = secretKey;
   }
 
@@ -14,60 +14,68 @@ export default class ClovaChatbot {
       .digest('base64');
   }
 
-  async sendMessage(message, userId = 'guest') {
+  async sendText(message, userId = 'guest') {
     const timestamp = Date.now();
-
     const payload = {
       version: 'v2',
-      userId: userId,
-      timestamp: timestamp,
+      userId,
+      timestamp,
       bubbles: [
         {
           type: 'text',
+          data: { description: message }
+        }
+      ],
+      event: 'send'
+    };
+
+    return this.request(payload);
+  }
+
+  async sendPostback(postbackValue, userId = 'guest', postbackFull = null) {
+    const timestamp = Date.now();
+    const payload = {
+      version: 'v2',
+      userId,
+      timestamp,
+      bubbles: [
+        {
+          type: 'event',
           data: {
-            description: message
+            type: 'postback',
+            data: {
+              postback: postbackValue,
+              postbackFull: postbackFull || `_T_${postbackValue}`  // default format used by most builders
+            }
           }
         }
       ],
       event: 'send'
     };
 
-    const bodyString = JSON.stringify(payload);
-    const signature = this.generateSignature(bodyString);
-
-    try {
-      const response = await axios.post(this.invokeUrl, payload, {
-        headers: {
-          'Content-Type': 'application/json;UTF-8',
-          'X-NCP-CHATBOT_SIGNATURE': signature
-        },
-        timeout: 10000
-      });
-
-      return response.data;
-    } catch (error) {
-      console.error('CLOVA Chatbot Error:', error.response?.data || error.message);
-      throw error;
-    }
+    return this.request(payload);
   }
-  async openMessage(message, userId = 'guest') {
-    const timestamp = Date.now();
 
+  async sendWelcome(userId = 'guest') {
+    const timestamp = Date.now();
     const payload = {
       version: 'v2',
-      userId: userId,
-      timestamp: timestamp,
+      userId,
+      timestamp,
       bubbles: [
         {
           type: 'text',
-          data: {
-            description: message
-          }
+          data: { description: 'welcome' }  
         }
       ],
       event: 'open'
     };
 
+    return this.request(payload);
+  }
+
+  // Shared request method (DRY)
+  async request(payload) {
     const bodyString = JSON.stringify(payload);
     const signature = this.generateSignature(bodyString);
 
@@ -80,20 +88,11 @@ export default class ClovaChatbot {
         timeout: 10000
       });
 
-      const replyBubble = response.data.bubbles?.[0];
-      if (!replyBubble) return 'No response';
-
-      if (replyBubble.type === 'text') {
-        return replyBubble.data.description;
-      }
-      if (replyBubble.type === 'template' && replyBubble.data?.cover?.data?.description) {
-        return replyBubble.data.cover.data.description;
-      }
-
-      return 'Rich message received (buttons/image)';
+      return response.data; 
     } catch (error) {
-      console.error('CLOVA Chatbot Error:', error.response?.data || error.message);
-      throw error;
+      const err = error.response?.data || error.message;
+      console.error('CLOVA Chatbot API Error:', err);
+      throw new Error(`Chatbot error: ${JSON.stringify(err)}`);
     }
   }
 }
