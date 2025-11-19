@@ -10,6 +10,7 @@ import weatherRoutes from './routes/weather.route.js'
 import productRoutes from './routes/product.route.js';
 import routineRoutes from './routes/routine.route.js';
 import productAnalyzeRoutes from './routes/productAnalyze.route.js';
+import chatbotRoutes from './routes/chatbot.route.js'
 
 const app = express();
 
@@ -41,6 +42,8 @@ app.use('/api/products', productRoutes);
 app.use('/api/weather', weatherRoutes);
 app.use('/api/routines', routineRoutes);
 app.use('/api/product-analyze', productAnalyzeRoutes);
+app.use('/api/chatbot', chatbotRoutes)
+
 
 app.get('/', (req, res) => res.send('Backend alive'));
 
