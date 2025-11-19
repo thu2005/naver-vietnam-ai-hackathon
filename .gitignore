@@ -60,3 +60,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 /backend/uploads
+
+/node_modules/
