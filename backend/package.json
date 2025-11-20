@@ -6,7 +6,12 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "init:safety-embeddings": "node src/scripts/initSafetyDataEmbeddings.js",
+    "test:rag": "node src/scripts/testRAGSystem.js",
+    "seed:ingredients:ai": "node src/scripts/initIngredientAI.js",
+    "seed:ingredients:cosing": "node src/scripts/seedCosingIngredients.js",
+    "seed:ingredients:renude": "node src/scripts/seedRenudeIngredients.js"
   },
   "keywords": [],
   "author": "",
@@ -24,7 +29,8 @@
     "mongoose": "^8.19.3",
     "morgan": "^1.10.1",
     "multer": "^2.0.2",
-    "openmeteo": "^1.2.2"
+    "openmeteo": "^1.2.2",
+    "pdf-parse": "^2.4.5"
   },
   "devDependencies": {
     "nodemon": "^3.1.11"

@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 dotenv.config();
 
 /**
- * Summarizes benefits from ingredient list using NAVER Hyper CLOVA LLM
+ * Summarizes benefits from ingredient list using NAVER Hyper CLOVA LLM - OPTIMIZED
  * @param {Array<Object>} ingredients - Array of ingredient objects with benefits
  * @returns {Promise<Array<string>>} Summarized benefits
  */
@@ -23,15 +23,12 @@ export async function summarizeBenefitsFromIngredients(ingredients) {
 		return [];
 	}
 
-	// Create prompt for LLM
-	const benefitsList = allBenefits.map((benefit, idx) => `${idx + 1}. ${benefit}`).join('\n');
+	// OPTIMIZATION: Limit benefits and create concise prompt
+	const limitedBenefits = allBenefits.slice(0, 20); // Take only first 20
+	const benefitsList = limitedBenefits.join(', ');
 	
-	const prompt = `Given the following benefits from various skincare ingredients, summarize them into 3-5 key product benefits. Make them concise, clear, and consumer-friendly.
-
-Ingredient Benefits:
-${benefitsList}
-
-Return a JSON object with a single field "benefits" containing an array of 3-5 summarized benefit strings. Each benefit should be a short phrase (5-10 words).`;
+	const prompt = `Summarize these skincare benefits into 3-5 key points (each 5-8 words): ${benefitsList}
+Return JSON: {"benefits": ["...", "...", "..."]}`;
 
 	// Setup API credentials
 	const __filename = fileURLToPath(import.meta.url);
@@ -51,7 +48,7 @@ Return a JSON object with a single field "benefits" containing an array of 3-5 s
 				messages: [
 					{
 						role: 'system',
-						content: 'You are a skincare expert who summarizes ingredient benefits into clear, consumer-friendly product benefits. Return only valid JSON.'
+						content: 'Summarize skincare benefits concisely as JSON.'
 					},
 					{
 						role: 'user',
@@ -59,8 +56,8 @@ Return a JSON object with a single field "benefits" containing an array of 3-5 s
 					},
 				],
 				response_format: { "type": "json_object" },
-				maxTokens: 500,
-				temperature: 0.5,
+				maxTokens: 200, // Reduced from 500
+				temperature: 0.4,
 				topP: 0.8,
 				repeatPenalty: 1.2
 			},
@@ -68,7 +65,8 @@ Return a JSON object with a single field "benefits" containing an array of 3-5 s
 				headers: {
 					'Authorization': `Bearer ${apiKey}`,
 					'Content-Type': 'application/json'
-				}
+				},
+				timeout: 10000 // 10s timeout
 			}
 		);
 
@@ -77,22 +75,11 @@ Return a JSON object with a single field "benefits" containing an array of 3-5 s
 			throw new Error('Invalid LLM response format');
 		}
 
-		// Parse JSON response
-		try {
-			const result = JSON.parse(content);
-			return Array.isArray(result.benefits) ? result.benefits : [];
-		} catch (directParseError) {
-			// Fallback: extract JSON object with regex
-			const jsonMatch = content.match(/\{[\s\S]*\}/);
-			if (!jsonMatch) {
-				throw new Error('No JSON found in LLM response');
-			}
-			const result = JSON.parse(jsonMatch[0]);
-			return Array.isArray(result.benefits) ? result.benefits : [];
-		}
+		const result = JSON.parse(content);
+		return Array.isArray(result.benefits) ? result.benefits : [];
 	} catch (error) {
 		console.error('Error calling HYPER CLOVA LLM for benefit summarization:', error.message);
-		// Fallback: return empty array
-		return [];
+		// Fallback: return top 3 unique benefits
+		return [...new Set(allBenefits)].slice(0, 3);
 	}
 }

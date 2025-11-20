@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 dotenv.config();
 
 /**
- * Extracts product info (name, brand, category, benefits) from OCR text using NAVER LLM
+ * Extracts product info (name, brand, category, benefits) from OCR text using NAVER LLM - OPTIMIZED
  * @param {string} ocrText - Raw OCR text from product packaging
  * @returns {Promise<Object>} Extracted product info
  */
@@ -19,12 +19,9 @@ export async function extractProductInfoFromTextService(ocrText) {
 		};
 	}
 
-	const prompt = `Given the following OCR text from a skincare product, extract and return a JSON object with ONLY these fields:
-	- name: The full product name
-	- brand: The brand name
-	- category: The product category (e.g. Brightening Serum, Cleanser, etc.)
-	- benefits: Array of key benefits (each as a short string)
-OCR Text:\n${ocrText}\nReturn a single JSON object with these fields, no extra text.`;
+	const prompt = `Extract from OCR text and return JSON with: name (product name), brand, category (e.g. "Brightening Serum"), benefits (array of 2-3 strings).
+
+OCR: ${ocrText.substring(0, 1000)}`; // Limit OCR text to 1000 chars for speed
 
 	// Setup API credentials
 	const __filename = fileURLToPath(import.meta.url);
@@ -44,7 +41,7 @@ OCR Text:\n${ocrText}\nReturn a single JSON object with these fields, no extra t
 				messages: [
 					{
 						role: 'system',
-						content: 'You are a skincare product expert. Extract accurate, concise product info in JSON format.'
+						content: 'Extract product info as JSON.'
 					},
 					{
 						role: 'user',
@@ -52,8 +49,8 @@ OCR Text:\n${ocrText}\nReturn a single JSON object with these fields, no extra t
 					},
 				],
 				response_format: { "type": "json_object" },
-				maxTokens: 1000,
-				temperature: 0.3,
+				maxTokens: 300, // Reduced from 1000
+				temperature: 0.2, // Lower for consistency
 				topP: 0.8,
 				repeatPenalty: 1.2
 			},
@@ -61,7 +58,8 @@ OCR Text:\n${ocrText}\nReturn a single JSON object with these fields, no extra t
 				headers: {
 					'Authorization': `Bearer ${apiKey}`,
 					'Content-Type': 'application/json'
-				}
+				},
+				timeout: 15000 // 15s timeout
 			}
 		);
 
@@ -70,29 +68,13 @@ OCR Text:\n${ocrText}\nReturn a single JSON object with these fields, no extra t
 			throw new Error('Invalid LLM response format');
 		}
 
-		// Try direct JSON parsing first
-		try {
-			const productData = JSON.parse(content);
-			return {
-				name: productData.name || '',
-				brand: productData.brand || '',
-				category: productData.category || '',
-				benefits: Array.isArray(productData.benefits) ? productData.benefits : []
-			};
-		} catch (directParseError) {
-			// Fallback: extract JSON object with regex
-			const jsonMatch = content.match(/\{[\s\S]*\}/);
-			if (!jsonMatch) {
-				throw new Error('No JSON found in LLM response');
-			}
-			const productData = JSON.parse(jsonMatch[0]);
-			return {
-				name: productData.name || '',
-				brand: productData.brand || '',
-				category: productData.category || '',
-				benefits: Array.isArray(productData.benefits) ? productData.benefits : []
-			};
-		}
+		const productData = JSON.parse(content);
+		return {
+			name: productData.name || '',
+			brand: productData.brand || '',
+			category: productData.category || '',
+			benefits: Array.isArray(productData.benefits) ? productData.benefits : []
+		};
 	} catch (error) {
 		console.error('Error calling HYPER CLOVA LLM for product info:', error.message);
 		// Fallback: return empty fields

@@ -14,6 +14,11 @@ dotenv.config();
  */
 export const productAnalyzeFromImages = async (req, res) => {
   try {
+    if (req.aborted) {
+      console.log('Request was aborted by client');
+      return;
+    }
+
     const frontImageFile = req.files?.frontImage?.[0];
     const backImageFile = req.files?.backImage?.[0];
     let user_skin = req.body.userSkin;
@@ -24,6 +29,12 @@ export const productAnalyzeFromImages = async (req, res) => {
     if (!frontImageFile || !backImageFile) {
       return res.status(400).json({ error: 'Both front and back images are required.' });
     }
+
+    req.on('aborted', () => {
+      console.log('Client disconnected during processing');
+    });
+
+    res.setHeader('Connection', 'keep-alive');
     const frontImagePath = path.resolve(frontImageFile.path);
     const backImagePath = path.resolve(backImageFile.path);
     const secretKey = process.env.OCR_SECRET_KEY;
@@ -32,18 +43,35 @@ export const productAnalyzeFromImages = async (req, res) => {
       return res.status(500).json({ error: 'OCR API credentials are not set in environment variables.' });
     }
 
-    // Run OCR on both images
-    const frontOcrData = await runOcrService(secretKey, apiUrl, frontImagePath);
-    const backOcrData = await runOcrService(secretKey, apiUrl, backImagePath);
+
+    const [frontOcrData, backOcrData] = await Promise.all([
+      runOcrService(secretKey, apiUrl, frontImagePath),
+      runOcrService(secretKey, apiUrl, backImagePath)
+    ]);
+
+    if (req.aborted) {
+      console.log('Request aborted after OCR');
+      return;
+    }
 
     // Get OCR text from both images
     const frontOcrText = getOcrTextFromData(frontOcrData);
     const backOcrText = getOcrTextFromData(backOcrData);
 
-    // Extract ingredients from back image OCR text
-    const ingredientResult = await extractIngredientsFromTextService(backOcrText);
+    const [productInfo, ingredientResult] = await Promise.all([
+      extractProductInfoFromTextService(frontOcrText),
+      extractIngredientsFromTextService(backOcrText)
+    ]);
+
+    // Check if still connected after extraction
+    if (req.aborted) {
+      console.log('Request aborted after text extraction');
+      return;
+    }
     
-    // Ensure all risk levels are present in the result
+    // OPTIMIZATION: Process risk grouping, suitability, and benefits in parallel
+    
+    // Risk grouping (fast, synchronous)
     const riskLevels = ['no-risk', 'low-risk', 'moderate-risk', 'high-risk'];
     const groupedByRisk = ingredientResult.reduce((acc, ingredient) => {
       const riskLevel = ingredient.risk_level || 'Unknown';
@@ -56,23 +84,22 @@ export const productAnalyzeFromImages = async (req, res) => {
       });
       return acc;
     }, {});
-    // Add missing risk levels as empty arrays
     riskLevels.forEach(level => {
       if (!groupedByRisk[level]) {
         groupedByRisk[level] = [];
       }
     });
 
-    // Calculate suitability scores
-    const suitabilityScores = Array.isArray(user_skin) && user_skin.length > 0
-      ? calculateSuitableScore(ingredientResult, user_skin)
-      : null;
-
-    // Extract product info from front image OCR text
-    const productInfo = await extractProductInfoFromTextService(frontOcrText);
+    // Calculate suitability and summarize benefits in parallel
+    const [suitabilityScores, summarizedBenefits] = await Promise.all([
+      Promise.resolve(
+        Array.isArray(user_skin) && user_skin.length > 0
+          ? calculateSuitableScore(ingredientResult, user_skin)
+          : null
+      ),
+      summarizeBenefitsFromIngredients(ingredientResult)
+    ]);
     
-    // Summarize benefits from ingredients using LLM
-    const summarizedBenefits = await summarizeBenefitsFromIngredients(ingredientResult);
     
     // Enrich product info by combining original benefits with ingredient-based benefits
     const enrichedProductInfo = {
@@ -80,6 +107,12 @@ export const productAnalyzeFromImages = async (req, res) => {
         benefits: [...productInfo.benefits, ...summarizedBenefits]
     };
     
+    if (req.aborted) {
+      console.log('Request aborted before sending response');
+      return;
+    }
+
+
     res.json({
         status: 'success',
         data: {
@@ -90,6 +123,8 @@ export const productAnalyzeFromImages = async (req, res) => {
         }
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    if (!req.aborted && !res.headersSent) {
+      res.status(500).json({ error: err.message });
+    }
   }
 }
