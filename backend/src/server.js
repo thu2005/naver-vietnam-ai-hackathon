@@ -11,6 +11,7 @@ import productRoutes from "./routes/product.route.js";
 import routineRoutes from "./routes/routine.route.js";
 import ingredientRoutes from "./routes/ingredient.route.js";
 import chatbotRoutes from "./routes/chatbot.route.js";
+import imageRoutes from "./routes/image.route.js";
 
 const app = express();
 
@@ -45,6 +46,7 @@ app.use("/api/weather", weatherRoutes);
 app.use("/api/routines", routineRoutes);
 app.use("/api/ingredient", ingredientRoutes);
 app.use("/api/chatbot", chatbotRoutes);
+app.use("/api", imageRoutes);
 
 app.get("/", (req, res) => res.send("Backend alive"));
 
@@ -61,5 +63,5 @@ mongoose
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-const PORT = process.env.PORT || 5002;
+const PORT = process.env.PORT || 5731;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
