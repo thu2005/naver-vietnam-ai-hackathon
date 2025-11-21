@@ -32,7 +32,8 @@ export async function callNaverOcr({ secretKey, apiUrl, imagePath, imageFormat =
       headers: { 'X-OCR-SECRET': secretKey, ...form.getHeaders() },
       data: form,
       maxBodyLength: Infinity,
-      maxContentLength: Infinity
+      maxContentLength: Infinity,
+      timeout: 60000 // 60 second timeout for OCR calls
     });
     return response.data;
   } catch (err) {

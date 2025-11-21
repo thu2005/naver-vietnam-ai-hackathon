@@ -61,7 +61,8 @@ OCR Text:\n${ocrText}\nReturn a single JSON object with these fields, no extra t
 				headers: {
 					'Authorization': `Bearer ${apiKey}`,
 					'Content-Type': 'application/json'
-				}
+				},
+				timeout: 60000 // 60 second timeout
 			}
 		);
 

@@ -13,6 +13,13 @@ import ingredientRoutes from './routes/ingredient.route.js';
 
 const app = express();
 
+// Increase timeout for long-running requests (5 minutes)
+app.use((req, res, next) => {
+  req.setTimeout(300000); // 5 minutes
+  res.setTimeout(300000);
+  next();
+});
+
 // Middleware
 app.use(cors({
   origin: '*',
@@ -20,7 +27,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(morgan('dev'));
 
 // Disable helmet and rate limiter for debugging
@@ -45,9 +52,16 @@ app.use('/api/ingredient', ingredientRoutes);
 app.get('/', (req, res) => res.send('Backend alive'));
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/skincare-app';
-mongoose.connect(MONGODB_URI)
+mongoose.connect(MONGODB_URI, {
+  serverSelectionTimeoutMS: 10000,
+  socketTimeoutMS: 300000
+})
   .then(() => console.log('Connected to MongoDB'))
   .catch((err) => console.error('MongoDB connection error:', err));
 
 const PORT = process.env.PORT || 5002;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+const server = app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+server.timeout = 300000;
+server.keepAliveTimeout = 300000;
+server.headersTimeout = 305000;
