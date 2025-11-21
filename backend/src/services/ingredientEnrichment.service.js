@@ -30,11 +30,24 @@ export async function enrichIngredientsWithDetails(ingredientNames) {
   // Step 2: Find still missing ingredients (need LLM)
   const stillMissing = ingredientNames.filter(name => !aiMap.has(name));
 
-  // Step 3: Call HYPER CLOVA LLM for remaining ingredients and cache results
+  // Step 3: Call HYPER CLOVA LLM for remaining ingredients in batches and cache results
   if (stillMissing.length > 0) {
     try {
-      const llmResults = await fetchIngredientFromLLM(stillMissing);
-      // Cache LLM results to IngredientAI DB
+      const BATCH_SIZE = 5;
+      const batches = [];
+      for (let i = 0; i < stillMissing.length; i += BATCH_SIZE) {
+        batches.push(stillMissing.slice(i, i + BATCH_SIZE));
+      }
+
+      // Process all batches in parallel
+      const batchPromises = batches.map((batch, idx) => {
+        return fetchIngredientFromLLM(batch);
+      });
+      const batchResults = await Promise.all(batchPromises);
+      
+      const llmResults = batchResults.flat();
+      
+      const cachePromises = [];
       for (let idx = 0; idx < llmResults.length; idx++) {
         const llmResult = llmResults[idx];
         const ingredientName = stillMissing[idx];
@@ -48,17 +61,19 @@ export async function enrichIngredientsWithDetails(ingredientNames) {
           reason: llmResult.reason || ''
         };
         aiMap.set(ingredientName, doc);
-        // Upsert to IngredientAI DB
-        try {
-          await IngredientAI.updateOne(
+        
+        cachePromises.push(
+          IngredientAI.updateOne(
             { name: doc.name },
             { $set: doc },
             { upsert: true }
-          );
-        } catch (dbError) {
-          console.error('Failed to cache ingredient to IngredientAI:', doc.name, dbError.message);
-        }
+          ).catch(dbError => {
+            console.error('Failed to cache ingredient to IngredientAI:', doc.name, dbError.message);
+          })
+        );
       }
+      
+      await Promise.all(cachePromises);
     } catch (error) {
       console.error('Failed to fetch ingredients from LLM:', error.message);
       // Add minimal fallback for all missing ingredients
@@ -148,7 +163,8 @@ Return a JSON array of objects, one for each ingredient, in the same order as li
         headers: {
           'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json'
-        }
+        },
+        timeout: 60000 // 60 second timeout per LLM call
       }
     );
 
@@ -228,7 +244,8 @@ Return a JSON array of objects, one for each ingredient, in the same order as li
         headers: {
           'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json'
-        }
+        },
+        timeout: 60000 // 60 second timeout per LLM call
       }
     );
 

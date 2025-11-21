@@ -37,23 +37,27 @@ export const productAnalyzeFromImages = async (req, res) => {
       });
     }
 
-    // Run OCR on both images
-    const frontOcrData = await runOcrService(secretKey, apiUrl, frontImagePath);
-    const backOcrData = await runOcrService(secretKey, apiUrl, backImagePath);
+    const startOcr = Date.now();
+    const [frontOcrData, backOcrData] = await Promise.all([
+      runOcrService(secretKey, apiUrl, frontImagePath),
+      runOcrService(secretKey, apiUrl, backImagePath)
+    ]);
 
     // Get OCR text from both images
     const frontOcrText = getOcrTextFromData(frontOcrData);
     const backOcrText = getOcrTextFromData(backOcrData);
+    console.log(backOcrText)
 
-    // Extract ingredients from back image OCR text
-    const ingredientResult = await extractIngredientsFromTextService(
-      backOcrText
-    );
-
+    const startExtract = Date.now();
+    const [ingredientResult, productInfo] = await Promise.all([
+      extractIngredientsFromTextService(backOcrText),
+      extractProductInfoFromTextService(frontOcrText)
+    ]);
+    
     // Ensure all risk levels are present in the result
     const riskLevels = ["no-risk", "low-risk", "moderate-risk", "high-risk"];
     const groupedByRisk = ingredientResult.reduce((acc, ingredient) => {
-      const riskLevel = ingredient.risk_level || "Unknown";
+      const riskLevel = ingredient.risk_level.toLowerCase() || 'unknown';
       if (!acc[riskLevel]) {
         acc[riskLevel] = [];
       }
@@ -71,19 +75,13 @@ export const productAnalyzeFromImages = async (req, res) => {
     });
 
     // Calculate suitability scores
-    const suitabilityScores =
-      Array.isArray(user_skin) && user_skin.length > 0
-        ? calculateSuitableScore(ingredientResult, user_skin)
-        : null;
-
-    // Extract product info from front image OCR text
-    const productInfo = await extractProductInfoFromTextService(frontOcrText);
-
+    const suitabilityScores = Array.isArray(user_skin) && user_skin.length > 0
+      ? calculateSuitableScore(ingredientResult, user_skin)
+      : null;
+    
     // Summarize benefits from ingredients using LLM
-    const summarizedBenefits = await summarizeBenefitsFromIngredients(
-      ingredientResult
-    );
-
+    const summarizedBenefits = await summarizeBenefitsFromIngredients(ingredientResult);
+    
     // Enrich product info by combining original benefits with ingredient-based benefits
     const enrichedProductInfo = {
       ...productInfo,

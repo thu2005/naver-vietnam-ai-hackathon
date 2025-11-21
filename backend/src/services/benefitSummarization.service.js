@@ -68,7 +68,8 @@ Return a JSON object with a single field "benefits" containing an array of 3-5 s
 				headers: {
 					'Authorization': `Bearer ${apiKey}`,
 					'Content-Type': 'application/json'
-				}
+				},
+				timeout: 60000 // 60 second timeout
 			}
 		);
 

@@ -15,6 +15,13 @@ import imageRoutes from "./routes/image.route.js";
 
 const app = express();
 
+// Increase timeout for long-running requests (5 minutes)
+app.use((req, res, next) => {
+  req.setTimeout(300000); // 5 minutes
+  res.setTimeout(300000);
+  next();
+});
+
 // Middleware
 app.use(
   cors({
