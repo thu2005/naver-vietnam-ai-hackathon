@@ -5,7 +5,7 @@ import Icon from "../../../components/AppIcon";
 const ChatHeader = ({ onToggleSidebar, onClearChat, messageCount }) => {
   return (
     <div
-      className="glass-nav border-b border-white/20 p-4"
+      className="glass-nav border-b border-white/20 p-3"
       style={{
         background:
           "linear-gradient(135deg, #f8f8e1 30%, #ffb5d1 70%, #ff90bb 100%)",

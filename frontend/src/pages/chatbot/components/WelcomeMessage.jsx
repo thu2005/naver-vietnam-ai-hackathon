@@ -2,7 +2,7 @@ import React from "react";
 import Button from "../../../components/ui/Button";
 import Icon from "../../../components/AppIcon";
 
-const WelcomeMessage = ({ onQuickStart }) => {
+const WelcomeMessage = ({ onStartChat, onQuickStart }) => {
   const aiFeatures = [
     {
       title: "Intelligent Ingredient Analysis",
@@ -78,10 +78,20 @@ const WelcomeMessage = ({ onQuickStart }) => {
         </div>
 
         <div className="mb-6">
-          <p className="text-center text-muted-foreground font-caption mb-4">
-            Start by asking me anything about skincare or use the suggestions
-            panel →
+          <p className="text-center text-muted-foreground font-caption mb-6">
+            Ready to get personalized skincare advice?
           </p>
+          <div className="flex justify-center">
+            <Button
+              variant="default"
+              onClick={onStartChat}
+              iconName="MessageCircle"
+              iconPosition="left"
+              className="rounded-3xl"
+            >
+              Start Conversation
+            </Button>
+          </div>
         </div>
 
         <div className="glass-card p-4 rounded-xl">

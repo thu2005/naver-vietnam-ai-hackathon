@@ -55,9 +55,9 @@ const ChatInput = ({ onSendMessage, disabled = false }) => {
           "linear-gradient(180deg, rgba(248,248,225,0.1) 0%, rgba(255,144,187,0.05) 100%)",
       }}
     >
-      <div className="p-4">
+      <div className="p-3">
         {selectedImage && (
-          <div className="mb-3 relative inline-block">
+          <div className="mb-1 relative inline-block">
             <img
               src={selectedImage?.url}
               alt={selectedImage?.alt}
@@ -117,7 +117,7 @@ const ChatInput = ({ onSendMessage, disabled = false }) => {
           </div>
         </form>
 
-        <div className="mt-2 text-xs text-muted-foreground font-caption">
+        <div className="mt-1 text-xs text-muted-foreground font-caption">
           Press Enter to send, Shift + Enter for new line.
         </div>
       </div>
