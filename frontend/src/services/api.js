@@ -66,7 +66,7 @@ class ApiService {
       }
     }
 
-    return this.request("/product-analyze/upload", {
+    return this.request("/ingredient/upload", {
       method: "POST",
       body: formData,
     });
@@ -132,12 +132,12 @@ class ApiService {
       throw new Error("Invalid response format from backend");
     }
 
-    const { product, ingredients, risk } = backendResponse.data;
+    const { product, ingredients, risk, suitable } = backendResponse.data;
 
     // Transform to match frontend expectations
     return {
       product: {
-        name: product?.product_name || "Unknown Product",
+        name: product?.name || product?.product_name || "Unknown Product",
         brand: product?.brand || "Unknown Brand",
         image:
           product?.image ||
@@ -149,27 +149,16 @@ class ApiService {
         ],
       },
       risk: {
-        categories: {
-          "no-risk": this.extractRiskCategory(ingredients, "low") || [],
-          "low-risk": this.extractRiskCategory(ingredients, "medium") || [],
-          "moderate-risk": this.extractRiskCategory(ingredients, "high") || [],
+        categories: risk || {
+          "no-risk": [],
+          "low-risk": [],
+          "moderate-risk": [],
+          "high-risk": [],
         },
       },
+      suitable: suitable || {},
       ingredients: this.transformIngredients(ingredients) || [],
     };
-  }
-
-  extractRiskCategory(ingredients, riskLevel) {
-    if (!ingredients || !Array.isArray(ingredients)) return [];
-
-    return ingredients
-      .filter((ing) => ing.safety_level === riskLevel)
-      .map((ing) => ({
-        name: ing.name,
-        concentration: ing.concentration || "Not specified",
-        reason:
-          ing.safety_description || "No specific safety information available",
-      }));
   }
 
   transformIngredients(ingredients) {
@@ -177,22 +166,12 @@ class ApiService {
 
     return ingredients.map((ing) => ({
       name: ing.name,
-      concentration: ing.concentration || "0",
       description: ing.description || "Ingredient description not available",
       benefits: ing.benefits || ["Benefits to be analyzed"],
-      usageNotes: ing.usage_notes || "Usage information not available",
-      safetyInfo: ing.safety_description || null,
-      riskLevel: this.mapSafetyLevel(ing.safety_level),
+      good_for: ing.good_for || [],
+      risk_level: ing.risk_level || "Unknown",
+      reason: ing.reason || "No safety information available",
     }));
-  }
-
-  mapSafetyLevel(backendLevel) {
-    const mapping = {
-      low: "no-risk",
-      medium: "low-risk",
-      high: "moderate-risk",
-    };
-    return mapping[backendLevel] || "no-risk";
   }
 }
 
