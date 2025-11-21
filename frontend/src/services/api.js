@@ -76,19 +76,11 @@ class ApiService {
 
       // Add skin type (e.g., "combination")
       if (userProfile.skinType) {
-        console.log(
-          "🔍 DEBUG Frontend - Adding skinType:",
-          userProfile.skinType
-        );
         userSkinTypes.push(userProfile.skinType);
       }
 
       // Add skin conditions (e.g., ["acne", "oiliness"])
       if (Array.isArray(userProfile.primaryStatus)) {
-        console.log(
-          "🔍 DEBUG Frontend - Adding primaryStatus:",
-          userProfile.primaryStatus
-        );
         userSkinTypes.push(...userProfile.primaryStatus);
       }
 
@@ -217,6 +209,30 @@ class ApiService {
       risk_level: ing.risk_level || "Unknown",
       reason: ing.reason || "No safety information available",
     }));
+  }
+
+  /**
+   * Chatbot APIs
+   */
+  async sendChatMessage(userId, message) {
+    return this.request("/chatbot", {
+      method: "POST",
+      body: JSON.stringify({ userId, message }),
+    });
+  }
+
+  async sendWelcomeMessage(userId = "guest") {
+    return this.request("/chatbot/open", {
+      method: "POST",
+      body: JSON.stringify({ userId }),
+    });
+  }
+
+  async clickChatButton(userId, postback, postbackFull) {
+    return this.request("/chatbot/click", {
+      method: "POST",
+      body: JSON.stringify({ userId, postback, postbackFull }),
+    });
   }
 }
 
