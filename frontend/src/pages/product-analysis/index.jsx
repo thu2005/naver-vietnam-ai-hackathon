@@ -9,7 +9,6 @@ import AnalysisProgress from "./components/AnalysisProgress";
 import Icon from "../../components/AppIcon";
 import Button from "../../components/ui/Button";
 import ApiService from "../../services/api";
-import ScanHistoryService from "../../services/scanHistory";
 import config from "../../config";
 
 const ProductAnalysis = () => {
@@ -31,16 +30,100 @@ const ProductAnalysis = () => {
   const [error, setError] = useState(null);
   const [useRealAPI, setUseRealAPI] = useState(config.features.useRealAPI);
 
+  // Transform scan history data to match expected analysis structure
+  const transformScanHistoryData = (scanData) => {
+    if (!scanData) return null;
+
+    // Check if this is the real API response format (has data.product, data.risk, etc.)
+    if (scanData.data) {
+      return {
+        product: {
+          ...scanData.data.product,
+          suitable: scanData.data.suitable || 75, // Move suitable to product level
+        },
+        risk: {
+          categories: scanData.data.risk || {} // Backend already has risk levels as keys
+        },
+        ingredients: (scanData.data.ingredients || []).map(ing => ({
+          name: ing.name,
+          riskLevel: ing.risk_level,
+          benefits: ing.benefits || [ing.description],
+          concentration: "N/A",
+          reason: ing.reason || "No specific concerns"
+        }))
+      };
+    }    // Check if this is already the frontend format (has product.suitable, risk.categories)
+    if (scanData.product && scanData.risk && scanData.risk.categories) {
+      return scanData;
+    }
+
+    // Handle database scan history format
+    return {
+      product: {
+        name: scanData.productName || "Unknown Product",
+        brand: scanData.productBrand || "Unknown Brand",
+        category: scanData.productCategory || "Product",
+        suitable: scanData.overallScore || 75,
+        benefits: scanData.recommendations || [],
+      },
+      risk: {
+        categories: {
+          // Group ingredients by risk level
+          "no-risk": (scanData.ingredients || []).filter(ing => ing.riskLevel === "no-risk"),
+          "low-risk": (scanData.ingredients || []).filter(ing => ing.riskLevel === "low-risk"),
+          "moderate-risk": (scanData.ingredients || []).filter(ing => ing.riskLevel === "moderate-risk"),
+          "high-risk": (scanData.ingredients || []).filter(ing => ing.riskLevel === "high-risk"),
+        }
+      },
+      ingredients: (scanData.ingredients || []).map(ing => ({
+        name: ing.name,
+        riskLevel: ing.riskLevel,
+        benefits: [ing.purpose],
+        concentration: "N/A",
+        reason: ing.concerns?.[0] || "No specific concerns"
+      }))
+    };
+  };
+
   // Load analysis results from navigation state (from scan history)
   useEffect(() => {
     if (location.state?.analysisResults && location.state?.showResults) {
-      setAnalysisResults(location.state.analysisResults);
+      // Check if this is raw backend response (has status/data) or already transformed
+      let transformedData;
+      if (location.state.analysisResults.data) {
+        // This is raw backend response, transform it
+        transformedData = ApiService.transformAnalysisResponse(location.state.analysisResults);
+      } else if (location.state.analysisResults.product && location.state.analysisResults.risk) {
+        // Already transformed, use as-is
+        transformedData = location.state.analysisResults;
+      } else {
+        // Database scan history format, need custom transform
+        transformedData = transformScanHistoryData(location.state.analysisResults);
+      }
+      setAnalysisResults(transformedData);
       setShowResults(true);
 
       // If coming from history, use the real uploaded images
       if (location.state.fromHistory && location.state.uploadedImages) {
         setUploadedImages(location.state.uploadedImages);
       }
+    } else if (location.state?.skipUpload) {
+      // Force skip upload even if no analysis results
+      // Provide fallback data structure if no analysis results
+      if (!location.state?.analysisResults) {
+        setAnalysisResults({
+          product: {
+            name: "Product Analysis",
+            brand: "Unknown Brand",
+            category: "Analysis Result",
+          },
+          risk: {
+            categories: {}
+          },
+          ingredients: []
+        });
+      }
+      setShowResults(true);
     }
   }, [location.state]);
 
@@ -236,15 +319,69 @@ const ProductAnalysis = () => {
       setAnalysisResults(transformedResults);
       setShowResults(true);
 
-      // Save scan result to history
-      ScanHistoryService.saveScanResult(transformedResults, uploadedImages);
+      // Save scan result to history - Follow routine pattern
+      try {
+        const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+        const username = userProfile?.username || userProfile?.name;
+
+        if (!username) {
+          console.warn('No username found, skipping scan history save');
+          return;
+        }
+
+        // Get userId from database like routine does
+        let userId;
+        try {
+          const userResponse = await ApiService.getUserByUsername(username);
+          userId = userResponse.user._id;
+        } catch (error) {
+          // User doesn't exist, create new user
+          const userData = {
+            username: username,
+            name: userProfile?.name || username,
+            skinType: userProfile?.skinType || "normal",
+            concerns: userProfile?.skinStatus || userProfile?.concerns || [],
+          };
+
+          const createResponse = await ApiService.createOrUpdateUser(userData);
+          userId = createResponse.user._id;
+        }
+
+        // Create scan data directly like routine does
+        const scanData = {
+          userId: userId,
+          productName: transformedResults.product?.name || "Unknown Product",
+          productBrand: transformedResults.product?.brand || "",
+          productCategory: transformedResults.product?.category || "",
+          safetyLevel: "safe", // Calculate from risk
+          overallScore: transformedResults.product?.suitable || 75,
+          riskScore: 25, // Calculate from ingredients
+          ingredients: transformedResults.ingredients?.map(ing => ({
+            name: ing.name || "",
+            riskLevel: (ing.risk_level || "low-risk").toLowerCase(), // Ensure lowercase
+            purpose: ing.description || "",
+            concerns: ing.reason ? [ing.reason] : [],
+          })) || [],
+          productImages: {
+            front: uploadedImages?.front || "",
+            back: uploadedImages?.back || "",
+          },
+          analysisSource: "api", // Use correct enum value
+          recommendations: transformedResults.product?.benefits || [],
+          warnings: [],
+          fullAnalysis: response, // Store raw backend response, not transformed version
+        };
+
+        await ApiService.saveScanHistory(scanData);
+      } catch (error) {
+        console.error('Failed to save scan result:', error);
+      }
     } catch (error) {
       console.error("API Analysis failed:", error);
       setError(error.message);
       setIsAnalyzing(false);
 
       // Fallback to mock data if API fails
-      console.log("Falling back to mock data...");
       simulateAnalysis();
     }
   };
@@ -280,27 +417,78 @@ const ProductAnalysis = () => {
     setAnalysisResults(mockAnalysisData);
     setShowResults(true);
 
-    // Save scan result to history
-    ScanHistoryService.saveScanResult(mockAnalysisData, uploadedImages);
+    // Save scan result to history - Follow routine pattern  
+    try {
+      const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+      const username = userProfile?.username || userProfile?.name;
+
+      if (!username) {
+        console.warn('No username found, skipping mock scan history save');
+        return;
+      }
+
+      // Get userId from database like routine does
+      let userId;
+      try {
+        const userResponse = await ApiService.getUserByUsername(username);
+        userId = userResponse.user._id;
+      } catch (error) {
+        // User doesn't exist, create new user
+        const userData = {
+          username: username,
+          name: userProfile?.name || username,
+          skinType: userProfile?.skinType || "normal",
+          concerns: userProfile?.skinStatus || userProfile?.concerns || [],
+        };
+
+        const createResponse = await ApiService.createOrUpdateUser(userData);
+        userId = createResponse.user._id;
+      }
+
+      // Create scan data directly like routine does
+      const scanData = {
+        userId: userId,
+        productName: mockAnalysisData.product?.name || "Unknown Product",
+        productBrand: mockAnalysisData.product?.brand || "",
+        productCategory: mockAnalysisData.product?.category || "",
+        safetyLevel: "safe", // Calculate from risk
+        overallScore: 85, // Mock score
+        riskScore: 15, // Mock risk score
+        ingredients: mockAnalysisData.ingredients?.map(ing => ({
+          name: ing.name || "",
+          riskLevel: ing.risk_level || "low-risk",
+          purpose: ing.description || "",
+          concerns: ing.reason ? [ing.reason] : [],
+        })) || [],
+        productImages: {
+          front: uploadedImages?.front || "",
+          back: uploadedImages?.back || "",
+        },
+        analysisSource: "mock",
+        recommendations: mockAnalysisData.product?.benefits || [],
+        warnings: [],
+        fullAnalysis: {
+          // Create mock response in same format as real backend
+          data: {
+            product: mockAnalysisData.product,
+            suitable: 85,
+            risk: mockAnalysisData.risk?.categories || {},
+            ingredients: mockAnalysisData.ingredients || []
+          }
+        }, // Store in backend response format
+      };
+
+      await ApiService.saveScanHistory(scanData);
+    } catch (error) {
+      console.error('Failed to save mock scan result:', error);
+    }
   };
 
   const handleAnalyzeProduct = () => {
     if (uploadedImages?.front || uploadedImages?.back) {
-      console.log("[DEBUG] useRealAPI:", useRealAPI);
-      console.log("[DEBUG] uploadedFiles:", uploadedFiles);
-      console.log(
-        "[DEBUG] config.features.useRealAPI:",
-        config.features.useRealAPI
-      );
-
       if (useRealAPI && (uploadedFiles?.front || uploadedFiles?.back)) {
-        console.log("✅ Calling REAL API...");
         analyzeProductWithAPI();
       } else {
-        console.log("⚠️ Using MOCK data. Reason:", {
-          useRealAPI,
-          hasFiles: !!(uploadedFiles?.front || uploadedFiles?.back),
-        });
         simulateAnalysis();
       }
     }
