@@ -8,6 +8,11 @@
 > **Naver Vietnam AI Hackathon 2025 Submission**  
 > An intelligent cosmetic product analyzer that leverages Naver Cloud Platform's AI services to help users make informed decisions about skincare products through ingredient analysis, personalized recommendations, and AI-powered consultations.
 
+<p align="center">
+  <img src=".github/assets/landing_page.gif" alt="SkinCare Analyzer Demo" width="800" />
+</p>
+<p align="center"><i>See SkinCare Analyzer in action: instant product analysis, routine recommendations, and AI consultation—all in one platform.</i></p>
+
 ---
 
 ## 📋 Table of Contents
@@ -562,25 +567,53 @@ skincare-analyzer/
 
 ---
 
-## 📸 Screenshots
+
+## 🖼️ Demo Gallery
+
+### Login & Sign Up
+
+<p align="center">
+  <img src=".github/assets/login.gif" alt="Login Demo" width="800" />
+</p>
+
+<p align="center">
+  <img src=".github/assets/register.gif" alt="Login Demo" width="800" />
+</p>
+
+_Sign up or log in to save your analysis and routines_
 
 ### Product Analysis
 
-![Product Analysis](https://via.placeholder.com/800x400?text=Product+Analysis+Screenshot)
+<p align="center">
+  <img src=".github/assets/product.gif" alt="Product Analysis Demo" width="800" />
+</p>
 
 _Upload product images and get instant ingredient analysis with risk assessment_
 
+
 ### Routine Recommendations
 
-![Routine Recommendations](https://via.placeholder.com/800x400?text=Routine+Recommendations+Screenshot)
+<p align="center">
+  <img src=".github/assets/routine.gif" alt="Routine Recommendations Demo" width="800" />
+</p>
 
-_Personalized skincare routines based on your skin type and environmental factors_
+_Personalized skincare routines based on your skin type, budget, steps and environmental factors_
 
 ### AI Chatbot
 
-![AI Chatbot](https://via.placeholder.com/800x400?text=AI+Chatbot+Screenshot)
+<p align="center">
+  <img src=".github/assets/chatbot.gif" alt="AI Chatbot Demo" width="800" />
+</p>
 
 _24/7 skincare consultation powered by Naver CLOVA_
+
+### Tracking History
+
+<p align="center">
+  <img src=".github/assets/tracking.gif" alt="Tracking History Demo" width="800" />
+</p>
+
+_Users can view their scan history and recommended routines. Every product scan and routine suggestion is saved for easy review and progress tracking._
 
 ---
 
