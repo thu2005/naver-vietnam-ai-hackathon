@@ -45,6 +45,7 @@ The platform addresses the growing consumer demand for transparency in cosmetic 
 ## ✨ Key Features
 
 ### 🔍 **Product Analysis**
+
 - **Image-Based OCR**: Upload front and back images of cosmetic products
 - **Intelligent Ingredient Extraction**: Automatically detect and extract ingredient lists from product labels
 - **Comprehensive Risk Assessment**: Categorize ingredients into four risk levels:
@@ -59,12 +60,14 @@ The platform addresses the growing consumer demand for transparency in cosmetic 
 - **Skin Type Matching**: Evaluate which skin types each ingredient is suitable for (oily, dry, combination, sensitive)
 
 ### 💬 **AI Skincare Chatbot**
+
 - **Natural Language Processing**: Powered by Naver Clova Chatbot API
 - **Personalized Consultation**: Get advice based on your skin type and concerns
 - **Product Recommendations**: Receive suggestions tailored to your needs
 - **24/7 Availability**: Instant responses to skincare questions
 
 ### 📊 **Personalized Routine Recommendations**
+
 - **Smart Algorithm**: Multi-factor analysis combining:
   - Skin type compatibility (oily, dry, combination, normal, sensitive)
   - Weather conditions (UV index)
@@ -76,6 +79,7 @@ The platform addresses the growing consumer demand for transparency in cosmetic 
 - **Business Value**: Product recommendation engine drives e-commerce potential and affiliate partnerships
 
 ### 📱 **User Experience**
+
 - **Scan History**: Track all analyzed products with timestamps
 - **Saved Routines**: Bookmark and manage personalized skincare regimens
 - **User Profiles**: Manage skin type, concerns, and preferences
@@ -87,11 +91,12 @@ The platform addresses the growing consumer demand for transparency in cosmetic 
 ## 🛠 Technology Stack
 
 ### **Frontend**
+
 - **Framework**: React 18.2 with Vite
 - **Styling**: Tailwind CSS with custom design system
 - **State Management**: Redux Toolkit
 - **Routing**: React Router v6
-- **UI Components**: 
+- **UI Components**:
   - Radix UI for accessible primitives
   - Framer Motion for animations
   - Lucide React for icons
@@ -99,12 +104,13 @@ The platform addresses the growing consumer demand for transparency in cosmetic 
 - **Form Handling**: React Hook Form
 
 ### **Backend**
+
 - **Runtime**: Node.js (ES Modules)
 - **Framework**: Express.js 5
 - **Database**: MongoDB with Mongoose ODM
 - **Authentication**: Session-based authentication
 - **File Upload**: Multer for image handling
-- **Security**: 
+- **Security**:
   - Helmet for HTTP headers
   - CORS configuration
   - Rate limiting
@@ -114,11 +120,13 @@ The platform addresses the growing consumer demand for transparency in cosmetic 
   - CSV parsing for data import
 
 ### **Naver Cloud Platform AI Services**
+
 - **CLOVA OCR**: Text extraction from product images
 - **CLOVA Chatbot**: Natural language conversation
 - **HyperCLOVA**: Advanced NLP for content generation
 
 ### **Third-Party APIs**
+
 - **Open-Meteo**: Weather data for personalized recommendations
 - **CosIng Database**: EU cosmetic ingredient database
 
@@ -129,38 +137,38 @@ The platform addresses the growing consumer demand for transparency in cosmetic 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                         Frontend (React)                        │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────────┐   │
-│  │ Product  │  │ Routine  │  │ Chatbot  │  │ User Profile │   │
-│  │ Analysis │  │ Recommend│  │  Page    │  │    Page      │   │
-│  └──────────┘  └──────────┘  └──────────┘  └──────────────┘   │
-└────────────────────────────┬────────────────────────────────────┘
-                             │ HTTP/REST API
-┌────────────────────────────▼────────────────────────────────────┐
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────────┐     │
+│  │ Product  │  │ Routine  │  │ Chatbot  │  │ User Profile │     │
+│  │ Analysis │  │ Recommend│  │  Page    │  │    Page      │     │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────────┘     │
+└──────────────────────────────┬──────────────────────────────────┘
+                               │ HTTP/REST API
+┌──────────────────────────────▼──────────────────────────────────┐
 │                    Backend (Express.js)                         │
-│  ┌───────────────────────────────────────────────────────────┐ │
-│  │                    API Routes Layer                        │ │
-│  │  /api/products  /api/routines  /api/chatbot  /api/users   │ │
-│  └───────────────────────────┬───────────────────────────────┘ │
-│  ┌───────────────────────────▼───────────────────────────────┐ │
-│  │                  Controllers Layer                         │ │
-│  │  Product  │  Routine  │  User  │  Image  │  Ingredient    │ │
-│  └───────────────────────────┬───────────────────────────────┘ │
-│  ┌───────────────────────────▼───────────────────────────────┐ │
-│  │                   Services Layer                           │ │
-│  │  OCR  │  Chatbot  │  Weather  │  Ingredient  │  Routine   │ │
-│  └───────────────────────────┬───────────────────────────────┘ │
-└────────────────────────────┬─┴───────────────────────────────┬─┘
-                             │                                 │
-        ┌────────────────────▼─────┐           ┌──────────────▼─────────┐
-        │   Naver Cloud Platform   │           │    MongoDB Database    │
-        │  ┌────────────────────┐  │           │  ┌──────────────────┐ │
-        │  │   CLOVA OCR API    │  │           │  │  Users           │ │
-        │  │   CLOVA Chatbot    │  │           │  │  Products        │ │
-        │  │   HyperCLOVA       │  │           │  │  Ingredients     │ │
-        │  └────────────────────┘  │           │  │  SavedRoutines   │ │
-        └──────────────────────────┘           │  │  ScanHistory     │ │
-                                                │  └──────────────────┘ │
-                                                └────────────────────────┘
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │                    API Routes Layer                       │  │
+│  │  /api/products  /api/routines  /api/chatbot  /api/users   │  │
+│  └───────────────────────────┬───────────────────────────────┘  │
+│  ┌───────────────────────────▼───────────────────────────────┐  │
+│  │                  Controllers Layer                        │  │
+│  │  Product  │  Routine  │  User  │  Image  │  Ingredient    │  │
+│  └───────────────────────────┬───────────────────────────────┘  │
+│  ┌───────────────────────────▼───────────────────────────────┐  │
+│  │                   Services Layer                          │  │
+│  │  OCR  │  Chatbot  │  Weather  │  Ingredient  │  Routine   │  │
+│  └───────────────────────────┬───────────────────────────────┘  │
+└──────────────┬───────────────┴─────────────────┬────────────────┘
+               │                                 │
+ ┌─────────────▼────────────┐        ┌───────────▼────────────┐
+ │   Naver Cloud Platform   │        │    MongoDB Database    │
+ │  ┌────────────────────┐  │        │  ┌──────────────────┐  │
+ │  │   CLOVA OCR API    │  │        │  │  Users           │  │
+ │  │   CLOVA Chatbot    │  │        │  │  Products        │  │
+ │  │   HyperCLOVA       │  │        │  │  Ingredients     │  │
+ │  └────────────────────┘  │        │  │  SavedRoutines   │  │
+ └──────────────────────────┘        │  │  ScanHistory     │  │
+                                     │  └──────────────────┘  │
+                                     └────────────────────────┘
 ```
 
 ### **Data Flow: Product Analysis**
@@ -187,6 +195,7 @@ The platform addresses the growing consumer demand for transparency in cosmetic 
 **Purpose**: Extract text from product images to identify ingredients
 
 **Implementation**:
+
 ```javascript
 // backend/src/services/ocr.service.js
 export async function runOcrService(secretKey, apiUrl, imagePath, imageFormat) {
@@ -195,12 +204,14 @@ export async function runOcrService(secretKey, apiUrl, imagePath, imageFormat) {
 ```
 
 **Features Used**:
+
 - General OCR for text extraction
 - Multi-language support (English, Korean)
 - High accuracy for small text on product labels
 - Confidence scoring for extracted text
 
 **Value Added**:
+
 - Eliminates manual ingredient list entry
 - Handles various label formats and orientations
 - Processes both front (product name) and back (ingredients) images
@@ -213,15 +224,16 @@ export async function runOcrService(secretKey, apiUrl, imagePath, imageFormat) {
 **Purpose**: Provide interactive skincare consultation and product advice
 
 **Implementation**:
+
 ```javascript
 // backend/src/services/clovaChatbot.service.js
 export default class ClovaChatbot {
   async sendText(message, userId) {
     const payload = {
-      version: 'v2',
+      version: "v2",
       userId,
-      bubbles: [{ type: 'text', data: { description: message } }],
-      event: 'send'
+      bubbles: [{ type: "text", data: { description: message } }],
+      event: "send",
     };
     return this.request(payload);
   }
@@ -229,6 +241,7 @@ export default class ClovaChatbot {
 ```
 
 **Features Used**:
+
 - Natural language understanding
 - Context-aware responses
 - Custom scenario builder integration
@@ -236,6 +249,7 @@ export default class ClovaChatbot {
 - Postback actions for structured responses
 
 **Value Added**:
+
 - 24/7 skincare expert consultation
 - Personalized product recommendations
 - Answers to ingredient-specific questions
@@ -248,6 +262,7 @@ export default class ClovaChatbot {
 **Purpose**: Generate intelligent summaries and content analysis
 
 **Implementation**:
+
 ```javascript
 // Used for:
 // - Benefit summarization from ingredient lists
@@ -257,12 +272,14 @@ export default class ClovaChatbot {
 ```
 
 **Features Used**:
+
 - Text generation with context
 - Summarization of complex ingredient data
 - Natural language content creation
 - Korean and English language support
 
 **Value Added**:
+
 - Automated benefit descriptions for routines
 - User-friendly explanations of technical ingredient data
 - Engaging product narratives
@@ -548,31 +565,36 @@ skincare-analyzer/
 ## 📸 Screenshots
 
 ### Product Analysis
+
 ![Product Analysis](https://via.placeholder.com/800x400?text=Product+Analysis+Screenshot)
 
-*Upload product images and get instant ingredient analysis with risk assessment*
+_Upload product images and get instant ingredient analysis with risk assessment_
 
 ### Routine Recommendations
+
 ![Routine Recommendations](https://via.placeholder.com/800x400?text=Routine+Recommendations+Screenshot)
 
-*Personalized skincare routines based on your skin type and environmental factors*
+_Personalized skincare routines based on your skin type and environmental factors_
 
 ### AI Chatbot
+
 ![AI Chatbot](https://via.placeholder.com/800x400?text=AI+Chatbot+Screenshot)
 
-*24/7 skincare consultation powered by Naver CLOVA*
+_24/7 skincare consultation powered by Naver CLOVA_
 
 ---
 
 ## 🔮 Future Enhancements
 
 ### **Phase 1: Enhanced Analysis**
+
 - [ ] Batch product comparison
 - [ ] Ingredient interaction warnings
 - [ ] Personalized allergen detection
 - [ ] Multi-language support (Vietnamese,...)
 
 ### **Phase 2: Social Features**
+
 - [ ] Product reviews and ratings
 - [ ] Community-driven ingredient database
 - [ ] Skincare routine sharing
@@ -580,12 +602,14 @@ skincare-analyzer/
 - [ ] Comment and discussion forums
 
 ### **Phase 3: Advanced AI**
+
 - [ ] Computer vision for product categorization
 - [ ] Predictive skin condition tracking
 - [ ] AR-based virtual product testing
 - [ ] Recommend products based on scan history
 
 ### **Phase 4: E-commerce Integration**
+
 - [ ] Price comparison across retailers
 - [ ] Direct purchase links
 - [ ] Subscription box recommendations
