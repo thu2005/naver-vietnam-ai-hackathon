@@ -384,8 +384,8 @@ const ProductAnalysis = () => {
             </div>
 
             {/* API Toggle & Error Display */}
-            <div className="flex flex-col items-center space-y-4 mb-8">
-              {/* API Mode Toggle */}
+
+            {/* <div className="flex flex-col items-center space-y-4 mb-8">
               <div className="glass-card p-4 rounded-xl">
                 <div className="flex items-center space-x-3">
                   <span className="text-sm text-muted-foreground font-caption">
@@ -408,7 +408,6 @@ const ProductAnalysis = () => {
                 </div>
               </div>
 
-              {/* Error Message */}
               {error && (
                 <div className="glass-card p-4 rounded-xl border border-error/20 bg-error/5 max-w-md">
                   <div className="flex items-center space-x-2">
@@ -423,7 +422,8 @@ const ProductAnalysis = () => {
                   </p>
                 </div>
               )}
-            </div>
+            </div> */}
+
 
             {/* Instructions */}
             <div className="glass-card rounded-xl p-6 max-w-5xl mx-auto">
@@ -514,7 +514,7 @@ const ProductAnalysis = () => {
               </div>
 
               {/* Analysis Cards */}
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 gap-8">
                 <div className="space-y-8">
                   <OverviewCard
                     productData={analysisResults?.product}
