@@ -254,6 +254,7 @@ export const saveScanHistory = async (req, res) => {
       analysisSource,
       recommendations,
       warnings,
+      fullAnalysis, // Add fullAnalysis field
     } = req.body;
 
     // Verify user exists
@@ -275,6 +276,7 @@ export const saveScanHistory = async (req, res) => {
       analysisSource: analysisSource || "mock",
       recommendations: recommendations || [],
       warnings: warnings || [],
+      fullAnalysis: fullAnalysis || {}, // Add fullAnalysis field
     });
 
     await scanHistory.save();

@@ -321,30 +321,63 @@ class ApiService {
     }
 
     const product = analysisResults.product || {};
-    const assessment = analysisResults.assessment || {};
+    const risk = analysisResults.risk || {};
     const ingredients = analysisResults.ingredients || [];
+
+    // Calculate safety level based on risk categories
+    let safetyLevel = "safe";
+    if (risk.categories) {
+      const riskCategories = risk.categories;
+      if (riskCategories["high-risk"]?.length > 0) {
+        safetyLevel = "caution";
+      } else if (riskCategories["moderate-risk"]?.length > 1) {
+        safetyLevel = "moderate";
+      }
+    }
+
+    // Calculate risk score based on ingredients risk levels
+    let riskScore = 0;
+    if (ingredients.length > 0) {
+      const riskValues = ingredients.map((ing) => {
+        switch (ing.risk_level?.toLowerCase()) {
+          case "high-risk":
+            return 4;
+          case "moderate-risk":
+            return 3;
+          case "low-risk":
+            return 2;
+          case "no-risk":
+            return 1;
+          default:
+            return 2;
+        }
+      });
+      const avgRisk =
+        riskValues.reduce((sum, val) => sum + val, 0) / riskValues.length;
+      riskScore = Math.round((avgRisk / 4) * 100); // Convert to 0-100 scale
+    }
 
     return {
       userId,
       productName: product.name || "Unknown Product",
       productBrand: product.brand || "",
       productCategory: product.category || "",
-      safetyLevel: assessment.safetyLevel || "moderate",
-      overallScore: assessment.overallScore || 0,
-      riskScore: assessment.riskScore || 0,
+      safetyLevel,
+      overallScore: product.suitable || 75, // Use suitable score as overall score
+      riskScore,
       ingredients: ingredients.map((ing) => ({
         name: ing.name || "",
-        riskLevel: ing.riskLevel || "low",
-        purpose: ing.purpose || "",
-        concerns: ing.concerns || [],
+        riskLevel: ing.risk_level || "low-risk", // Keep original format from backend
+        purpose: ing.description || "",
+        concerns: ing.reason ? [ing.reason] : [],
       })),
       productImages: {
         front: uploadedImages?.front || "",
         back: uploadedImages?.back || "",
       },
-      analysisSource: analysisResults.source || "mock",
-      recommendations: assessment.recommendations || [],
-      warnings: assessment.warnings || [],
+      analysisSource: analysisResults.source || "analysis",
+      recommendations: product.benefits || [],
+      warnings: [],
     };
   }
 }

@@ -44,7 +44,7 @@ const scanHistorySchema = new mongoose.Schema(
         },
         riskLevel: {
           type: String,
-          enum: ["low", "medium", "high"],
+          enum: ["no-risk", "low-risk", "moderate-risk", "high-risk"],
           required: true,
         },
         purpose: {
@@ -75,6 +75,10 @@ const scanHistorySchema = new mongoose.Schema(
     },
     recommendations: [String],
     warnings: [String],
+    fullAnalysis: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
   },
   {
     timestamps: true,

@@ -60,7 +60,7 @@ const RiskAssessmentCard = ({ riskData }) => {
       <div className="space-y-6">
         {/* Risk Categories */}
         <div className="space-y-4">
-          {Object.entries(riskData?.categories)?.map(
+          {riskData?.categories ? Object.entries(riskData.categories)?.map(
             ([category, ingredients]) => {
               const config = getRiskConfig(category);
 
@@ -112,6 +112,11 @@ const RiskAssessmentCard = ({ riskData }) => {
                 </div>
               );
             }
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <Icon name="AlertCircle" size={48} className="mx-auto mb-4 opacity-50" />
+              <p>Risk assessment data not available</p>
+            </div>
           )}
         </div>
       </div>

@@ -7,7 +7,6 @@ import Button from "../../components/ui/Button";
 import ProfileHeader from "./components/ProfileHeader";
 import ScanHistoryTab from "./components/ScanHistoryTab";
 import SavedRoutinesTab from "./components/SavedRoutinesTab";
-import ScanHistoryService from "../../services/scanHistory";
 import ApiService from "../../services/api";
 
 const UserProfileDashboard = () => {
@@ -40,31 +39,60 @@ const UserProfileDashboard = () => {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
-  const loadScanHistory = () => {
-    const history = ScanHistoryService.getScanHistory();
-    setScanHistory(history);
+  const loadScanHistory = async () => {
+    try {
+      const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+      const username = userProfile?.username || userProfile?.name;
 
-    // Update stats based on loaded history
-    const totalScans = history.length;
-    const safeScans = history.filter(
-      (scan) => scan.safetyLevel === "safe"
-    ).length;
-    const moderateScans = history.filter(
-      (scan) => scan.safetyLevel === "moderate"
-    ).length;
-    const cautionScans = history.filter(
-      (scan) => scan.safetyLevel === "caution"
-    ).length;
-    const activeDays = ScanHistoryService.calculateActiveDays(history);
+      if (!username) {
+        console.warn('No username found for scan history');
+        setScanHistory([]);
+        return;
+      }
 
-    setStats((prevStats) => ({
-      ...prevStats,
-      totalScans,
-      safeScans,
-      moderateScans,
-      cautionScans,
-      activeDays,
-    }));
+      // Get userId from database like routine does
+      try {
+        const userResponse = await ApiService.getUserByUsername(username);
+        const userId = userResponse.user._id;
+        
+        const response = await ApiService.getScanHistory(userId);
+        const history = response.data || [];
+        setScanHistory(history);
+
+        // Update stats based on loaded history
+        const totalScans = history.length;
+        const safeScans = history.filter(
+          (scan) => scan.safetyLevel === "safe"
+        ).length;
+        const moderateScans = history.filter(
+          (scan) => scan.safetyLevel === "moderate"
+        ).length;
+        const cautionScans = history.filter(
+          (scan) => scan.safetyLevel === "caution"
+        ).length;
+        // Calculate active days from scan dates
+        const uniqueDates = new Set(
+          history.map(scan => {
+            const date = new Date(scan.createdAt || scan.scanDate);
+            return date.toDateString();
+          })
+        );
+        const activeDays = uniqueDates.size;
+
+        setStats((prevStats) => ({
+          ...prevStats,
+          totalScans,
+          activeDays,
+        }));
+      } catch (error) {
+        // User doesn't exist in database yet
+        console.log('User not found in database, showing empty scan history');
+        setScanHistory([]);
+      }
+    } catch (error) {
+      console.error('Failed to load scan history:', error);
+      setScanHistory([]);
+    }
   };
 
   const loadSavedRoutines = async () => {
@@ -307,21 +335,19 @@ const UserProfileDashboard = () => {
                     <button
                       key={tab?.id}
                       onClick={() => setActiveTab(tab?.id)}
-                      className={`flex items-center gap-2 px-6 py-4 font-caption font-medium transition-smooth hover:bg-white/5 ${
-                        activeTab === tab?.id
+                      className={`flex items-center gap-2 px-6 py-4 font-caption font-medium transition-smooth hover:bg-white/5 ${activeTab === tab?.id
                           ? "text-primary border-b-2 border-primary bg-primary/5"
                           : "text-muted-foreground hover:text-foreground"
-                      }`}
+                        }`}
                     >
                       <Icon name={tab?.icon} size={18} />
                       <span>{tab?.label}</span>
                       {tab?.count !== null && (
                         <span
-                          className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                            activeTab === tab?.id
+                          className={`px-2 py-0.5 rounded-full text-xs font-medium ${activeTab === tab?.id
                               ? "bg-primary text-white"
                               : "bg-muted text-muted-foreground"
-                          }`}
+                            }`}
                         >
                           {tab?.count}
                         </span>

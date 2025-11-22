@@ -3,12 +3,31 @@ import { useNavigate } from "react-router-dom";
 import Icon from "../../../components/AppIcon";
 import Image from "../../../components/AppImage";
 import Button from "../../../components/ui/Button";
-import ScanHistoryService from "../../../services/scanHistory";
+import ApiService from "../../../services/api";
 
 const ScanHistoryTab = ({ scanHistory, onHistoryUpdate }) => {
   const navigate = useNavigate();
   const [selectedItems, setSelectedItems] = useState([]);
   const [sortBy, setSortBy] = useState("date");
+
+  // Helper function to format date
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  };
+
+  // Helper function to format time
+  const formatTime = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('vi-VN', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 
   const handleSelectItem = (id) => {
     setSelectedItems((prev) =>
@@ -24,24 +43,49 @@ const ScanHistoryTab = ({ scanHistory, onHistoryUpdate }) => {
     }
   };
 
-  const handleDeleteSelected = () => {
+  const handleDeleteSelected = async () => {
     if (selectedItems.length === 0) return;
 
-    const success = ScanHistoryService.deleteMultipleScans(selectedItems);
-    if (success && onHistoryUpdate) {
-      onHistoryUpdate(); // Refresh the history in parent component
-    }
-    setSelectedItems([]);
-    console.log("Deleted items:", selectedItems);
-  };
+    try {
+      const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+      if (!userProfile.id) {
+        console.warn('No user ID found for delete operation');
+        return;
+      }
 
-  const handleClearAll = () => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa tất cả lịch sử quét?")) {
-      const success = ScanHistoryService.clearAllScans();
-      if (success && onHistoryUpdate) {
+      await ApiService.deleteMultipleScanHistory(userProfile.id, selectedItems);
+      if (onHistoryUpdate) {
         onHistoryUpdate(); // Refresh the history in parent component
       }
       setSelectedItems([]);
+      console.log('Deleted items:', selectedItems);
+    } catch (error) {
+      console.error('Failed to delete scan items:', error);
+    }
+  };
+
+  const handleClearAll = async () => {
+    if (window.confirm("Bạn có chắc chắn muốn xóa tất cả lịch sử quét?")) {
+      try {
+        const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+        if (!userProfile.id) {
+          console.warn('No user ID found for clear operation');
+          return;
+        }
+
+        // Delete all scan history by getting all scan IDs
+        const allScanIds = scanHistory.map(scan => scan.id || scan._id);
+        if (allScanIds.length > 0) {
+          await ApiService.deleteMultipleScanHistory(userProfile.id, allScanIds);
+        }
+
+        if (onHistoryUpdate) {
+          onHistoryUpdate(); // Refresh the history in parent component
+        }
+        setSelectedItems([]);
+      } catch (error) {
+        console.error('Failed to clear all scan history:', error);
+      }
     }
   };
 
@@ -168,8 +212,8 @@ const ScanHistoryTab = ({ scanHistory, onHistoryUpdate }) => {
         ) : (
           sortedHistory?.map((item) => (
             <div
-              key={item?.id}
-              className={`rounded-2xl glass-card p-4 transition-smooth hover:shadow-glow ${selectedItems?.includes(item?.id)
+              key={item?._id || item?.id}
+              className={`rounded-2xl glass-card p-4 transition-smooth hover:shadow-glow ${selectedItems?.includes(item?._id || item?.id)
                 ? "ring-2 ring-primary/50"
                 : ""
                 }`}
@@ -177,18 +221,18 @@ const ScanHistoryTab = ({ scanHistory, onHistoryUpdate }) => {
               <div className="flex items-start gap-4">
                 {/* Checkbox */}
                 <button
-                  onClick={() => handleSelectItem(item?.id)}
+                  onClick={() => handleSelectItem(item?._id || item?.id)}
                   className="mt-1 transition-smooth hover:scale-110"
                 >
                   <Icon
                     name={
-                      selectedItems?.includes(item?.id)
+                      selectedItems?.includes(item?._id || item?.id)
                         ? "CheckSquare"
                         : "Square"
                     }
                     size={20}
                     className={
-                      selectedItems?.includes(item?.id)
+                      selectedItems?.includes(item?._id || item?.id)
                         ? "text-primary"
                         : "text-muted-foreground"
                     }
@@ -198,8 +242,8 @@ const ScanHistoryTab = ({ scanHistory, onHistoryUpdate }) => {
                 {/* Product Image */}
                 <div className="w-16 h-16 rounded-lg overflow-hidden bg-white/10 flex-shrink-0">
                   <Image
-                    src={item?.productImage}
-                    alt={item?.productImageAlt}
+                    src={item?.productImages?.front || '/assets/images/placeholder.png'}
+                    alt={`${item?.productName} product image`}
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -211,9 +255,11 @@ const ScanHistoryTab = ({ scanHistory, onHistoryUpdate }) => {
                       <h4 className="font-heading font-semibold text-foreground truncate">
                         {item?.productName}
                       </h4>
-                      <p className="text-sm text-muted-foreground font-caption">
-                        {item?.brandName}
-                      </p>
+                      {item?.productBrand && (
+                        <p className="text-sm text-muted-foreground font-caption">
+                          {item?.productBrand}
+                        </p>
+                      )}
                     </div>
 
                     <div
@@ -231,27 +277,32 @@ const ScanHistoryTab = ({ scanHistory, onHistoryUpdate }) => {
                     <div className="flex items-center gap-4 text-sm text-muted-foreground font-caption">
                       <div className="flex items-center gap-1">
                         <Icon name="Calendar" size={14} />
-                        <span>{item?.scanDate}</span>
+                        <span>{formatDate(item?.createdAt || item?.scanDate)}</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <Icon name="Clock" size={14} />
-                        <span>{item?.scanTime}</span>
+                        <span>{formatTime(item?.createdAt || item?.scanDate)}</span>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2">
                       <Button
                         size="sm"
-                        onClick={() =>
+                        onClick={() => {
                           navigate("/product", {
                             state: {
                               analysisResults: item?.fullAnalysis,
-                              uploadedImages: item?.uploadedImages,
+                              uploadedImages: {
+                                front: item?.productImages?.front || null,
+                                back: item?.productImages?.back || null
+                              },
                               showResults: true,
-                              fromHistory: true
+                              fromHistory: true,
+                              skipUpload: true // Add flag to bypass upload form
                             },
-                          })
-                        }
+                            replace: true // Replace current history entry
+                          });
+                        }}
                         iconName="Eye"
                         iconPosition="left"
                         className="bg-ring rounded-3xl"
