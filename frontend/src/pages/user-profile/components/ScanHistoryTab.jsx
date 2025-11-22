@@ -37,7 +37,10 @@ const ScanHistoryTab = ({ scanHistory, onHistoryUpdate }) => {
 
   const handleClearAll = () => {
     if (window.confirm("Bạn có chắc chắn muốn xóa tất cả lịch sử quét?")) {
-      onHistoryChange?.([]);
+      const success = ScanHistoryService.clearAllScans();
+      if (success && onHistoryUpdate) {
+        onHistoryUpdate(); // Refresh the history in parent component
+      }
       setSelectedItems([]);
     }
   };
@@ -87,7 +90,7 @@ const ScanHistoryTab = ({ scanHistory, onHistoryUpdate }) => {
   return (
     <div className="rounded-3xl space-y-4">
       {/* Controls */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
@@ -104,31 +107,6 @@ const ScanHistoryTab = ({ scanHistory, onHistoryUpdate }) => {
               ? "Deselect all"
               : "Select all"}
           </Button>
-
-          {selectedItems?.length > 0 && (
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={handleDeleteSelected}
-              iconName="Trash2"
-              iconPosition="left"
-            >
-              Delete ({selectedItems?.length})
-            </Button>
-          )}
-
-          {scanHistory?.length > 0 && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleClearAll}
-              iconName="X"
-              iconPosition="left"
-              className="text-red-500 border-red-500 hover:bg-red-50"
-            >
-              Clear All
-            </Button>
-          )}
         </div>
 
         <div className="flex items-center gap-2">
@@ -138,14 +116,33 @@ const ScanHistoryTab = ({ scanHistory, onHistoryUpdate }) => {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e?.target?.value)}
-            className="bg-white/10 border border-white/20 rounded-lg px-3 py-1 text-sm font-caption focus:outline-none focus:ring-2 focus:ring-primary/50"
+            className="bg-background border border-border rounded px-2 py-1 text-sm font-caption focus:outline-none focus:ring-2 focus:ring-primary/20"
           >
-            <option value="date">Scan date</option>
-            <option value="name">Product name</option>
-            <option value="safety">Safety level</option>
+            <option value="date">Date</option>
+            <option value="safety">Safety Level</option>
+            <option value="name">Product Name</option>
           </select>
         </div>
       </div>
+
+      {/* Delete Controls */}
+      {selectedItems?.length > 0 && (
+        <div className="flex items-center gap-3 p-3 bg-primary/10 rounded-lg mb-4">
+          <span className="text-sm font-caption text-foreground">
+            Selected {selectedItems?.length} scan{selectedItems?.length > 1 ? "s" : ""}
+          </span>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={handleDeleteSelected}
+            iconName="Trash2"
+            iconPosition="left"
+          >
+            Delete
+          </Button>
+        </div>
+      )}
+
       {/* History List */}
       <div className="space-y-3">
         {sortedHistory?.length === 0 ? (
@@ -244,7 +241,6 @@ const ScanHistoryTab = ({ scanHistory, onHistoryUpdate }) => {
 
                     <div className="flex items-center gap-2">
                       <Button
-                        variant="ghost"
                         size="sm"
                         onClick={() =>
                           navigate("/product", {
@@ -258,6 +254,7 @@ const ScanHistoryTab = ({ scanHistory, onHistoryUpdate }) => {
                         }
                         iconName="Eye"
                         iconPosition="left"
+                        className="bg-ring rounded-3xl"
                       >
                         View details
                       </Button>
@@ -269,7 +266,7 @@ const ScanHistoryTab = ({ scanHistory, onHistoryUpdate }) => {
           ))
         )}
       </div>
-    </div>
+    </div >
   );
 };
 
