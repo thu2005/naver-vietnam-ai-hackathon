@@ -135,6 +135,10 @@ class ApiService {
     return this.request(`/users/username/${encodeURIComponent(username)}`);
   }
 
+  async getUserById(userId) {
+    return this.request(`/users/${userId}`);
+  }
+
   /**
    * Routine Management APIs
    */
@@ -268,6 +272,80 @@ class ApiService {
       method: "POST",
       body: JSON.stringify({ userId, postback, postbackFull }),
     });
+  }
+
+  /**
+   * Scan History APIs
+   */
+  async saveScanHistory(scanData) {
+    return this.request("/users/scan-history", {
+      method: "POST",
+      body: JSON.stringify(scanData),
+    });
+  }
+
+  async getScanHistory(userId, page = 1, limit = 50) {
+    return this.request(
+      `/users/${userId}/scan-history?page=${page}&limit=${limit}`,
+      {
+        method: "GET",
+      }
+    );
+  }
+
+  async getScanHistoryStats(userId) {
+    return this.request(`/users/${userId}/scan-history/stats`, {
+      method: "GET",
+    });
+  }
+
+  async deleteScanHistory(userId, scanId) {
+    return this.request(`/users/${userId}/scan-history/${scanId}`, {
+      method: "DELETE",
+    });
+  }
+
+  async deleteMultipleScanHistory(userId, scanIds) {
+    return this.request(`/users/${userId}/scan-history`, {
+      method: "DELETE",
+      body: JSON.stringify({ scanIds }),
+    });
+  }
+
+  /**
+   * Transform analysis results to scan history format
+   */
+  transformAnalysisToScanHistory(analysisResults, uploadedImages, userId) {
+    if (!analysisResults || !userId) {
+      throw new Error("Analysis results and userId are required");
+    }
+
+    const product = analysisResults.product || {};
+    const assessment = analysisResults.assessment || {};
+    const ingredients = analysisResults.ingredients || [];
+
+    return {
+      userId,
+      productName: product.name || "Unknown Product",
+      productBrand: product.brand || "",
+      productCategory: product.category || "",
+      safetyLevel: assessment.safetyLevel || "moderate",
+      overallScore: assessment.overallScore || 0,
+      riskScore: assessment.riskScore || 0,
+      ingredients: ingredients.map((ing) => ({
+        name: ing.name || "",
+        riskLevel: ing.riskLevel || "low",
+        purpose: ing.purpose || "",
+        concerns: ing.concerns || [],
+      })),
+      productImages: {
+        front: uploadedImages?.front || "",
+        back: uploadedImages?.back || "",
+      },
+      analysisSource: analysisResults.source || "mock",
+      recommendations: assessment.recommendations || [],
+      warnings: assessment.warnings || [],
+    };
   }
 }
 

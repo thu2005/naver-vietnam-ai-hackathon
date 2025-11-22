@@ -1,5 +1,7 @@
+import mongoose from "mongoose";
 import User from "../models/User.js";
 import SavedRoutine from "../models/SavedRoutine.js";
+import ScanHistory from "../models/ScanHistory.js";
 
 // Create or update user
 export const createOrUpdateUser = async (req, res) => {
@@ -229,5 +231,191 @@ export const deleteMultipleRoutines = async (req, res) => {
     res
       .status(500)
       .json({ message: "Error deleting routines", error: error.message });
+  }
+};
+
+// Save scan history
+export const saveScanHistory = async (req, res) => {
+  try {
+    const {
+      userId,
+      productName,
+      productBrand,
+      productCategory,
+      safetyLevel,
+      overallScore,
+      riskScore,
+      ingredients,
+      productImages,
+      analysisSource,
+      recommendations,
+      warnings,
+    } = req.body;
+
+    // Verify user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const scanHistory = new ScanHistory({
+      userId,
+      productName,
+      productBrand: productBrand || "",
+      productCategory: productCategory || "",
+      safetyLevel,
+      overallScore,
+      riskScore,
+      ingredients: ingredients || [],
+      productImages: productImages || { front: "", back: "" },
+      analysisSource: analysisSource || "mock",
+      recommendations: recommendations || [],
+      warnings: warnings || [],
+    });
+
+    await scanHistory.save();
+    res.status(201).json({
+      message: "Scan history saved successfully",
+      data: scanHistory,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error saving scan history",
+      error: error.message,
+    });
+  }
+};
+
+// Get user's scan history
+export const getScanHistory = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { limit = 50, page = 1 } = req.query;
+
+    const skip = (page - 1) * limit;
+
+    const scanHistory = await ScanHistory.find({ userId })
+      .sort({ scanDate: -1 })
+      .limit(parseInt(limit))
+      .skip(skip);
+
+    const total = await ScanHistory.countDocuments({ userId });
+
+    res.status(200).json({
+      success: true,
+      data: scanHistory,
+      pagination: {
+        total,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        pages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error retrieving scan history",
+      error: error.message,
+    });
+  }
+};
+
+// Get scan history statistics
+export const getScanHistoryStats = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const stats = await ScanHistory.aggregate([
+      { $match: { userId: mongoose.Types.ObjectId(userId) } },
+      {
+        $group: {
+          _id: null,
+          totalScans: { $sum: 1 },
+          safeScans: {
+            $sum: { $cond: [{ $eq: ["$safetyLevel", "safe"] }, 1, 0] },
+          },
+          moderateScans: {
+            $sum: { $cond: [{ $eq: ["$safetyLevel", "moderate"] }, 1, 0] },
+          },
+          cautionScans: {
+            $sum: { $cond: [{ $eq: ["$safetyLevel", "caution"] }, 1, 0] },
+          },
+          avgOverallScore: { $avg: "$overallScore" },
+          avgRiskScore: { $avg: "$riskScore" },
+        },
+      },
+    ]);
+
+    const result = stats[0] || {
+      totalScans: 0,
+      safeScans: 0,
+      moderateScans: 0,
+      cautionScans: 0,
+      avgOverallScore: 0,
+      avgRiskScore: 0,
+    };
+
+    res.status(200).json({ data: result });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error retrieving scan statistics",
+      error: error.message,
+    });
+  }
+};
+
+// Delete scan history item
+export const deleteScanHistory = async (req, res) => {
+  try {
+    const { userId, scanId } = req.params;
+
+    const deletedScan = await ScanHistory.findOneAndDelete({
+      _id: scanId,
+      userId,
+    });
+
+    if (!deletedScan) {
+      return res.status(404).json({
+        message: "Scan history not found or not authorized",
+      });
+    }
+
+    res.status(200).json({
+      message: "Scan history deleted successfully",
+      data: deletedScan,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error deleting scan history",
+      error: error.message,
+    });
+  }
+};
+
+// Delete multiple scan history items
+export const deleteMultipleScanHistory = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { scanIds } = req.body;
+
+    if (!scanIds || !Array.isArray(scanIds)) {
+      return res.status(400).json({
+        message: "scanIds array is required",
+      });
+    }
+
+    const result = await ScanHistory.deleteMany({
+      _id: { $in: scanIds },
+      userId,
+    });
+
+    res.status(200).json({
+      message: `${result.deletedCount} scan history items deleted successfully`,
+      deletedCount: result.deletedCount,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error deleting scan history",
+      error: error.message,
+    });
   }
 };
