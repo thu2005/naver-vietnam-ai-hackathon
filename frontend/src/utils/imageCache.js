@@ -5,7 +5,8 @@ const CACHE_EXPIRY_DAYS = 7; // Cache for 7 days
 
 export const getCachedImage = (query) => {
   try {
-    const cacheKey = CACHE_KEY_PREFIX + btoa(query); // Base64 encode query for safe key
+    // Fix Unicode: encodeURIComponent trước khi btoa
+    const cacheKey = CACHE_KEY_PREFIX + btoa(encodeURIComponent(query));
     const cached = localStorage.getItem(cacheKey);
     if (cached) {
       const { imageUrl, timestamp } = JSON.parse(cached);
@@ -30,7 +31,8 @@ export const getCachedImage = (query) => {
 
 export const setCachedImage = (query, imageUrl) => {
   try {
-    const cacheKey = CACHE_KEY_PREFIX + btoa(query);
+    // Fix Unicode: encodeURIComponent trước khi btoa
+    const cacheKey = CACHE_KEY_PREFIX + btoa(encodeURIComponent(query));
     const cacheData = {
       imageUrl,
       timestamp: Date.now(),

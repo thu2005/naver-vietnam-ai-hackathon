@@ -47,55 +47,51 @@ const RoutineRecommendations = () => {
   const fetchUVIndex = async () => {
     setIsLoadingUV(true);
     try {
+      // Helper to fetch weather and update UV info
+      const fetchWeatherAndUpdate = async (latitude, longitude) => {
+        const params = new URLSearchParams({
+          latitude: latitude.toString(),
+          longitude: longitude.toString(),
+        });
+        const response = await fetch(`${API_URL}/weather?${params}`);
+        if (!response.ok) {
+          throw new Error(`Weather API error: ${response.status}`);
+        }
+        const data = await response.json();
+        const now = new Date();
+        const currentHourIndex = now.getHours();
+        const currentUV = data.hourly?.uv_index?.[currentHourIndex] || 0;
+        setUvIndex(Math.round(currentUV));
+        // Use existing UV level logic
+        if (currentUV <= 2) setUvLevel("Low");
+        else if (currentUV <= 5) setUvLevel("Moderate");
+        else if (currentUV <= 7) setUvLevel("High");
+        else if (currentUV <= 10) setUvLevel("Very High");
+        else setUvLevel("Extreme");
+        setIsLoadingUV(false);
+        const userProfile = JSON.parse(
+          localStorage.getItem("userProfile") || "{}"
+        );
+        const skinType = userProfile?.skinType?.toLowerCase() || "normal";
+        fetchSunscreenProducts(Math.round(currentUV), skinType);
+      };
+
       // Get user location
       if (!navigator.geolocation) {
-        console.error("Geolocation not supported");
+        // Geolocation not supported, fallback to Ho Chi Minh City
+        await fetchWeatherAndUpdate(10.7769, 106.7009);
         return;
       }
 
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const { latitude, longitude } = position.coords;
-
-          const params = new URLSearchParams({
-            latitude: latitude.toString(),
-            longitude: longitude.toString(),
-          });
-
-          const response = await fetch(`${API_URL}/weather?${params}`);
-
-          if (!response.ok) {
-            throw new Error(`Weather API error: ${response.status}`);
-          }
-
-          const data = await response.json();
-
-          // Get current hour UV index
-          const now = new Date();
-          const currentHourIndex = now.getHours();
-          const currentUV = data.hourly?.uv_index?.[currentHourIndex] || 0;
-
-          setUvIndex(Math.round(currentUV));
-
-          // Determine UV level
-          if (currentUV <= 2) setUvLevel("Low");
-          else if (currentUV <= 5) setUvLevel("Moderate");
-          else if (currentUV <= 7) setUvLevel("High");
-          else if (currentUV <= 10) setUvLevel("Very High");
-          else setUvLevel("Extreme");
-
-          setIsLoadingUV(false);
-
-          // Fetch sunscreen products with UV index and skin type
-          const userProfile = JSON.parse(
-            localStorage.getItem("userProfile") || "{}"
-          );
-          const skinType = userProfile?.skinType?.toLowerCase() || "normal";
-          fetchSunscreenProducts(Math.round(currentUV), skinType);
+          await fetchWeatherAndUpdate(latitude, longitude);
         },
-        (error) => {
+        async (error) => {
+          // Geolocation failed, fallback to Ho Chi Minh City
           console.error("Error getting location:", error);
-          setIsLoadingUV(false);
+          await fetchWeatherAndUpdate(10.7769, 106.7009);
         }
       );
     } catch (error) {
@@ -178,7 +174,7 @@ const RoutineRecommendations = () => {
         rating: product.rating || product.rank || 0,
         image:
           product.thumbnail_url ||
-          "https://images.unsplash.com/photo-1616750819456-5cdee9b85d22",
+          "https://png.pngtree.com/thumb_back/fh260/background/20210207/pngtree-simple-gray-solid-color-background-image_557027.jpg",
         imageAlt: `${product.brand || "Unknown Brand"} - ${
           product.name || "Unknown Product"
         }`,
@@ -723,7 +719,7 @@ const RoutineRecommendations = () => {
           rating: product.rank || 0,
           image:
             product.thumbnail_url ||
-            "https://images.unsplash.com/photo-1735286770188-de4c5131589a",
+            "https://png.pngtree.com/thumb_back/fh260/background/20210207/pngtree-simple-gray-solid-color-background-image_557027.jpg",
           imageAlt: `${product.brand || "Unknown Brand"} - ${
             product.name || "Unknown Product"
           }`,
