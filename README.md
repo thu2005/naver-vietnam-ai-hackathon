@@ -285,17 +285,6 @@ export default class ClovaChatbot {
 **Implementation**:
 
 ```javascript
-const prompt = `For each of the following skincare ingredients, return a JSON array where each object has ONLY these fields:
-  - name: The standard INCI name (should match the input name)
-  - description: A brief, informative description (1-2 sentences)
-  - benefits: Array of 3-4 key benefits (each as a full sentence)
-  - good_for: Array of specific keywords for skin types, conditions, or situations. You MUST select ONLY from this exact list: ['oily', 'dry', 'combination', 'sensitive', 'normal', 'acne', 'aging', 'pigmentation', 'sensitivity', 'oiliness', 'dryness']. Do NOT use generic terms like "all" or "all skin types". If an ingredient is suitable for multiple types, list them individually.
-  - risk_level: One of ['no-risk', 'low-risk', 'moderate-risk', 'high-risk', 'unknown'] indicating the safety risk of the ingredient
-  - reason: A brief explanation (1-2 sentences) for the assigned risk level
-Ingredients:
-${ingredientNames.map((name, i) => `${i + 1}. ${name}`).join('\n')}
-Return a JSON array of objects, one for each ingredient, in the same order as listed above. Do not include any extra fields.`;
-
 const response = await axios.post(
     process.env.HYPER_CLOVA_API_URL,
     {
