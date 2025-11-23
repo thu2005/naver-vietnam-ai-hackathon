@@ -13,7 +13,7 @@ import AnalysisProgress from "./components/AnalysisProgress";
 import { preloadRoutineImages } from "../../utils/imageCache";
 import ApiService from "../../services/api";
 
-const API_URL = "http://localhost:5731";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5731";
 
 const RoutineRecommendations = () => {
   const navigate = useNavigate();
@@ -62,7 +62,7 @@ const RoutineRecommendations = () => {
             longitude: longitude.toString(),
           });
 
-          const response = await fetch(`${API_URL}/api/weather?${params}`);
+          const response = await fetch(`${API_URL}/weather?${params}`);
 
           if (!response.ok) {
             throw new Error(`Weather API error: ${response.status}`);
@@ -163,7 +163,7 @@ const RoutineRecommendations = () => {
         priceRange: priceRange || "budget-friendly",
       });
 
-      const response = await fetch(`${API_URL}/api/products/uv?${params}`);
+      const response = await fetch(`${API_URL}/products/uv?${params}`);
 
       if (!response.ok) {
         throw new Error(`Products API error: ${response.status}`);
@@ -287,7 +287,7 @@ const RoutineRecommendations = () => {
         budgetRange: priceRange,
       });
 
-      const response = await fetch(`${API_URL}/api/routines?${params}`);
+      const response = await fetch(`${API_URL}/routines?${params}`);
 
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);
