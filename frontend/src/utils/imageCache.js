@@ -51,9 +51,9 @@ export const getProductImage = async (query) => {
     }
 
     console.log("Fetching image from backend:", query);
-    const apiUrl = "http://localhost:5731";
+    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5731";
     const res = await fetch(
-      `${apiUrl}/api/product-image?q=${encodeURIComponent(query)}`
+      `${apiUrl}/product-image?q=${encodeURIComponent(query)}`
     );
 
     console.log("Backend API response status:", res.status);
