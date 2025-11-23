@@ -10,7 +10,7 @@ const TeamShowcase = () => {
       role: "Developer",
       description: "Third year student at HCMUS.",
       avatar:
-        "https://i.pinimg.com/736x/7c/aa/01/7caa01ab379ba99e72a7a22713603fe5.jpg",
+        "/assets/images/huy.png",
       expertise: ["Data Science"],
       social: {
         github: "https://github.com/huytran28",
@@ -22,7 +22,7 @@ const TeamShowcase = () => {
       role: "Developer",
       description: "Third year student at HCMUS",
       avatar:
-        "https://i.pinimg.com/736x/7c/aa/01/7caa01ab379ba99e72a7a22713603fe5.jpg",
+        "/assets/images/ngoc.jpg",
       expertise: ["Software Engineering"],
       social: {
         github: "https://github.com/hbnnnnnnn",
@@ -34,7 +34,7 @@ const TeamShowcase = () => {
       role: "Developer",
       description: "Third year student at HCMUS",
       avatar:
-        "https://i.pinimg.com/736x/7c/aa/01/7caa01ab379ba99e72a7a22713603fe5.jpg",
+        "/assets/images/nhi.png",
       expertise: ["Data Science"],
       social: {
         github: "https://github.com/ynnhi2607",
@@ -46,7 +46,7 @@ const TeamShowcase = () => {
       role: "Developer",
       description: "Third year student at HCMUS",
       avatar:
-        "https://i.pinimg.com/736x/7c/aa/01/7caa01ab379ba99e72a7a22713603fe5.jpg",
+        "/assets/images/thu.jpg",
       expertise: ["Software Engineering"],
       social: {
         github: "https://github.com/thu2005",
