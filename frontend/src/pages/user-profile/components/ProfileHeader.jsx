@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import ApiService from "../../../services/api";
 import Icon from "../../../components/AppIcon";
 import Image from "../../../components/AppImage";
 import Button from "../../../components/ui/Button";
@@ -8,6 +9,16 @@ import Select from "../../../components/ui/Select";
 const ProfileHeader = ({ userProfile, onUpdateProfile }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedProfile, setEditedProfile] = useState(userProfile);
+
+  const handleEdit = () => {
+    setEditedProfile({
+      ...userProfile,
+      concerns: Array.isArray(userProfile?.concerns)
+        ? userProfile.concerns
+        : [],
+    });
+    setIsEditing(true);
+  };
 
   const defaultAvatar = "https://aic.com.vn/avatar-fb-mac-dinh/";
 
@@ -28,9 +39,23 @@ const ProfileHeader = ({ userProfile, onUpdateProfile }) => {
     { value: "oiliness", label: "Oiliness" },
   ];
 
-  const handleSave = () => {
-    onUpdateProfile(editedProfile);
-    setIsEditing(false);
+  const handleSave = async () => {
+    try {
+      const payload = {
+        username: userProfile?.username,
+        name: editedProfile?.name || userProfile?.name,
+        skinType: editedProfile?.skinType || userProfile?.skinType || "normal",
+        concerns: Array.isArray(editedProfile?.concerns)
+          ? editedProfile.concerns
+          : [],
+        avatar: editedProfile?.avatar || userProfile?.avatar,
+      };
+      await ApiService.createOrUpdateUser(payload);
+      onUpdateProfile(payload);
+      setIsEditing(false);
+    } catch (error) {
+      alert("Save profile failed! " + (error?.message || ""));
+    }
   };
 
   const handleCancel = () => {
@@ -92,13 +117,13 @@ const ProfileHeader = ({ userProfile, onUpdateProfile }) => {
                   }
                 />
                 <Select
-                  label="Primary Status"
+                  label="Skin Status"
                   options={skinStatusOptions}
-                  value={editedProfile?.primaryStatus}
+                  value={editedProfile?.concerns}
                   onChange={(value) =>
                     setEditedProfile({
                       ...editedProfile,
-                      primaryStatus: value,
+                      concerns: value,
                     })
                   }
                   multiple
@@ -136,7 +161,7 @@ const ProfileHeader = ({ userProfile, onUpdateProfile }) => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setIsEditing(true)}
+                  onClick={handleEdit}
                   iconName="Edit2"
                   iconPosition="left"
                   className="rounded-3xl hover:bg-[rgba(255,144,187,0.2)]"
@@ -170,17 +195,17 @@ const ProfileHeader = ({ userProfile, onUpdateProfile }) => {
                     </span>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {Array.isArray(userProfile?.primaryStatus)
-                      ? userProfile?.primaryStatus
-                          ?.map(
-                            (Status) =>
+                    {Array.isArray(userProfile?.concerns)
+                      ? userProfile.concerns
+                          .map(
+                            (status) =>
                               skinStatusOptions?.find(
-                                (opt) => opt?.value === Status
-                              )?.label
+                                (opt) => opt?.value === status
+                              )?.label || status
                           )
-                          ?.join(", ")
+                          .join(", ")
                       : skinStatusOptions?.find(
-                          (opt) => opt?.value === userProfile?.primaryStatus
+                          (opt) => opt?.value === userProfile?.concerns
                         )?.label}
                   </p>
                 </div>
