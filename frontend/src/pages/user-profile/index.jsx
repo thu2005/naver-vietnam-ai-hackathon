@@ -41,11 +41,13 @@ const UserProfileDashboard = () => {
 
   const loadScanHistory = async () => {
     try {
-      const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+      const userProfile = JSON.parse(
+        localStorage.getItem("userProfile") || "{}"
+      );
       const username = userProfile?.username || userProfile?.name;
 
       if (!username) {
-        console.warn('No username found for scan history');
+        console.warn("No username found for scan history");
         setScanHistory([]);
         return;
       }
@@ -54,7 +56,7 @@ const UserProfileDashboard = () => {
       try {
         const userResponse = await ApiService.getUserByUsername(username);
         const userId = userResponse.user._id;
-        
+
         const response = await ApiService.getScanHistory(userId);
         const history = response.data || [];
         setScanHistory(history);
@@ -72,7 +74,7 @@ const UserProfileDashboard = () => {
         ).length;
         // Calculate active days from scan dates
         const uniqueDates = new Set(
-          history.map(scan => {
+          history.map((scan) => {
             const date = new Date(scan.createdAt || scan.scanDate);
             return date.toDateString();
           })
@@ -86,11 +88,11 @@ const UserProfileDashboard = () => {
         }));
       } catch (error) {
         // User doesn't exist in database yet
-        console.log('User not found in database, showing empty scan history');
+        console.log("User not found in database, showing empty scan history");
         setScanHistory([]);
       }
     } catch (error) {
-      console.error('Failed to load scan history:', error);
+      console.error("Failed to load scan history:", error);
       setScanHistory([]);
     }
   };
@@ -230,19 +232,31 @@ const UserProfileDashboard = () => {
     const savedUserProfile = localStorage.getItem("userProfile");
     if (savedUserProfile) {
       const profileData = JSON.parse(savedUserProfile);
-      setUserProfile({
-        id: 1,
-        name: profileData.name || "User",
-        avatar:
-          profileData.avatar ||
-          "https://aic.com.vn/wp-content/uploads/2024/10/avatar-fb-mac-dinh.jpg",
-        avatarAlt: "User profile avatar",
-        skinType: profileData.skinType || "normal",
-        primaryStatus:
-          profileData.primaryStatus || profileData.skinStatus || [],
-        joinDate:
-          profileData.joinDate || new Date().toLocaleDateString("en-US"),
-      });
+      const username = profileData.username;
+      if (!username) {
+        navigate("/login");
+        return;
+      }
+      ApiService.getUserByUsername(username)
+        .then((res) => {
+          const dbUser = res.user;
+          setUserProfile({
+            username: dbUser.username,
+            name: dbUser.name,
+            avatar:
+              dbUser.avatar ||
+              "https://aic.com.vn/wp-content/uploads/2024/10/avatar-fb-mac-dinh.jpg",
+            avatarAlt: "User profile avatar",
+            skinType: dbUser.skinType || "normal",
+            concerns: dbUser.concerns || [],
+            joinDate:
+              dbUser.createdAt || new Date().toLocaleDateString("en-US"),
+          });
+        })
+        .catch(() => {
+          // If not found in DB, redirect to login
+          navigate("/login");
+        });
     } else {
       // No saved profile, redirect to login
       navigate("/login");
@@ -335,19 +349,21 @@ const UserProfileDashboard = () => {
                     <button
                       key={tab?.id}
                       onClick={() => setActiveTab(tab?.id)}
-                      className={`flex items-center gap-2 px-6 py-4 font-caption font-medium transition-smooth hover:bg-white/5 ${activeTab === tab?.id
+                      className={`flex items-center gap-2 px-6 py-4 font-caption font-medium transition-smooth hover:bg-white/5 ${
+                        activeTab === tab?.id
                           ? "text-primary border-b-2 border-primary bg-primary/5"
                           : "text-muted-foreground hover:text-foreground"
-                        }`}
+                      }`}
                     >
                       <Icon name={tab?.icon} size={18} />
                       <span>{tab?.label}</span>
                       {tab?.count !== null && (
                         <span
-                          className={`px-2 py-0.5 rounded-full text-xs font-medium ${activeTab === tab?.id
+                          className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                            activeTab === tab?.id
                               ? "bg-primary text-white"
                               : "bg-muted text-muted-foreground"
-                            }`}
+                          }`}
                         >
                           {tab?.count}
                         </span>
