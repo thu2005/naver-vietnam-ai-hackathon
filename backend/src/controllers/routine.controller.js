@@ -11,7 +11,7 @@ const STRATEGY_ORDER = {
 
 export const getRoutine = async (req, res) => {
   try {
-    const { skinType, budgetRange, strategy } = req.query;
+    const { skinType, priceBracket, strategy } = req.query;
 
     if (!skinType) {
       return res
@@ -22,8 +22,8 @@ export const getRoutine = async (req, res) => {
     const normalizedSkinType = skinType.toLowerCase();
     const query = { skinType: normalizedSkinType };
 
-    if (budgetRange) {
-      query.budgetRange = budgetRange;
+    if (priceBracket) {
+      query.priceBracket = priceBracket;
     }
     if (strategy) {
       query.strategy = strategy;
@@ -58,7 +58,7 @@ export const getRoutine = async (req, res) => {
 
 export const createRoutine = async (req, res) => {
   try {
-    const { skinType, strategy, budgetRange } = req.body;
+    const { skinType, strategy, priceBracket } = req.body;
 
     if (!skinType) {
       return res.status(400).json({ message: "skinType is required" });
@@ -67,11 +67,9 @@ export const createRoutine = async (req, res) => {
     const query = { skinType: skinType.toLowerCase() };
 
     if (strategy) query.strategy = strategy;
-    if (budgetRange) query.budgetRange = budgetRange;
+    if (priceBracket) query.priceBracket = priceBracket;
 
-    const routines = await Routine.find(query)
-      .populate("steps.products")
-      .lean();
+    const routines = await Routine.find(query).populate("steps.products").lean();
 
     routines.sort((a, b) => {
       const orderA = STRATEGY_ORDER[a.strategy] || 999;
@@ -104,12 +102,12 @@ export const createRoutine = async (req, res) => {
 
 export const getRoutineByBudgetRange = async (req, res) => {
   try {
-    const { budgetRange, skinType } = req.query;
+    const { priceBracket, skinType } = req.query;
 
-    if (!budgetRange) {
+    if (!priceBracket) {
       return res.status(400).json({
         message:
-          "budgetRange query parameter is required (budget-friendly, mid-range, or premium)",
+          "priceBracket query parameter is required (budget, affordable, mid-range, premium, luxury, or ultra-luxury)",
       });
     }
     if (!skinType) {
@@ -118,21 +116,19 @@ export const getRoutineByBudgetRange = async (req, res) => {
         .json({ message: "skinType query parameter is required" });
     }
 
-    const validBudgetRanges = ["budget-friendly", "mid-range", "premium"];
-    if (!validBudgetRanges.includes(budgetRange)) {
+    const validPriceBrackets = ["budget", "affordable", "mid-range", "premium", "luxury", "ultra-luxury"];
+    if (!validPriceBrackets.includes(priceBracket)) {
       return res.status(400).json({
-        message: `Invalid budgetRange. Must be one of: ${validBudgetRanges.join(
+        message: `Invalid priceBracket. Must be one of: ${validPriceBrackets.join(
           ", "
         )}`,
       });
     }
 
     const routines = await Routine.find({
-      budgetRange: budgetRange,
+      priceBracket: priceBracket,
       skinType: skinType.toLowerCase(),
-    })
-      .populate("steps.products")
-      .lean();
+    }).populate("steps.products").lean();
 
     routines.sort((a, b) => {
       const orderA = STRATEGY_ORDER[a.strategy] || 999;
@@ -170,21 +166,25 @@ export const getRoutineByPrice = async (req, res) => {
     }
 
     const priceNum = parseFloat(price);
-    let budgetRange;
-    if (priceNum < 500000) {
-      budgetRange = "budget-friendly";
-    } else if (priceNum < 1500000) {
-      budgetRange = "mid-range";
+    let priceBracket;
+    if (priceNum <= 894200) {
+      priceBracket = "budget";
+    } else if (priceNum <= 1157200) {
+      priceBracket = "affordable";
+    } else if (priceNum <= 1630600) {
+      priceBracket = "mid-range";
+    } else if (priceNum <= 2314400) {
+      priceBracket = "premium";
+    } else if (priceNum <= 4602500) {
+      priceBracket = "luxury";
     } else {
-      budgetRange = "premium";
+      priceBracket = "ultra-luxury";
     }
 
     const routines = await Routine.find({
-      budgetRange: budgetRange,
+      priceBracket: priceBracket,
       skinType: skinType.toLowerCase(),
-    })
-      .populate("steps.products")
-      .lean();
+    }).populate("steps.products").lean();
 
     routines.sort((a, b) => {
       const orderA = STRATEGY_ORDER[a.strategy] || 999;
