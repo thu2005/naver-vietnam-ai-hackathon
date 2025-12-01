@@ -32,6 +32,12 @@ const VARIATION_STRATEGIES = [
   "anti_aging",
 ];
 
+const SORTING_STRATEGIES = [
+  { name: "budget_focused", sort: { price: 1, rank: -1 } }, // Cheapest first
+  { name: "quality_focused", sort: { rank: -1, price: -1 } }, // Highest rank first
+  { name: "balanced", sort: { rank: -1, price: 1 } }, // High rank, but cheaper preferred
+];
+
 function getSkinFieldName(t) { return `${t}_skin`; }
 
 const seenSignatures = new Set();
@@ -79,7 +85,7 @@ async function discoverPriceBrackets() {
 // ─────────────────────────────────────────────────────────────────────────────
 // 2. Generate one routine
 // ─────────────────────────────────────────────────────────────────────────────
-async function generateRoutine(type, skinType, bracket, strategy) {
+async function generateRoutine(type, skinType, bracket, strategy, sortingStrategy) {
   const stepsDef = type === "morning" ? MORNING_STEPS : NIGHT_STEPS;
   const selectedSteps = [];
 
@@ -94,13 +100,20 @@ async function generateRoutine(type, skinType, bracket, strategy) {
     const query = {
       category: step.category,
       [getSkinFieldName(skinType)]: true,
-      price: { $lte: bracket.maxPerProduct },
     };
+
+    // For budget brackets, don't limit by price to find absolute cheapest
+    // For other brackets, enforce the price limit
+    if (bracket.name !== "budget" && bracket.name !== "affordable") {
+      query.price = { $lte: bracket.maxPerProduct };
+    }
+
     if (step.minSpf) query.spf = { $gte: step.minSpf };
 
+    // Use the sorting strategy and get more products
     let products = await Product.find(query)
-      .sort({ rank: -1, price: -1 })
-      .limit(12)
+      .sort(sortingStrategy.sort)
+      .limit(30) // Increased from 12 to 30 for more variety
       .lean();
 
     if (products.length === 0) {
@@ -108,8 +121,13 @@ async function generateRoutine(type, skinType, bracket, strategy) {
       continue;
     }
 
-    // Slight randomness so we don’t get the exact same top 5 every time
-    const take = 4 + Math.floor(Math.random() * 3);
+    // For budget-focused sorting, take cheaper products; otherwise add randomness
+    let take;
+    if (sortingStrategy.name === "budget_focused") {
+      take = 5 + Math.floor(Math.random() * 4); // 5-8 products, focusing on cheaper ones
+    } else {
+      take = 4 + Math.floor(Math.random() * 3); // 4-6 products
+    }
     products = products.slice(0, take);
 
     selectedSteps.push({
@@ -128,9 +146,9 @@ async function generateRoutine(type, skinType, bracket, strategy) {
 
   for (const step of selectedSteps) {
     const stepProducts = await Product.find({ _id: { $in: step.products } }).lean();
-    const maxPrice = Math.max(...stepProducts.map(p => p.price || 0));
+    const minPrice = Math.min(...stepProducts.map(p => p.price || 0));
     const maxRank = Math.max(...stepProducts.map(p => p.rank || 0));
-    totalPrice += maxPrice;
+    totalPrice += minPrice;
     totalRank += maxRank;
   }
 
@@ -178,15 +196,23 @@ async function seed() {
       console.log(`  ${bracket.name} (≤ ${bracket.maxPerProduct === Infinity ? "∞" : bracket.maxPerProduct.toLocaleString()}đ)`);
       let generatedThisBracket = 0;
 
+      // For budget/affordable brackets, prioritize budget_focused sorting
+      // For other brackets, use all sorting strategies for variety
+      const sortingStrategies = (bracket.name === "budget" || bracket.name === "affordable")
+        ? [SORTING_STRATEGIES[0], SORTING_STRATEGIES[2]] // budget_focused and balanced
+        : SORTING_STRATEGIES;
+
       for (const strategy of VARIATION_STRATEGIES) {
-        for (const type of ["morning", "night"]) {
-          // Try up to 5 times to get a unique routine for this combo
-          for (let attempt = 0; attempt < 5; attempt++) {
-            const r = await generateRoutine(type, skinType, bracket, strategy);
-            if (r) {
-              allRoutines.push(r);
-              generatedThisBracket++;
-              break;
+        for (const sortingStrategy of sortingStrategies) {
+          for (const type of ["morning", "night"]) {
+            // Try up to 5 times to get a unique routine for this combo
+            for (let attempt = 0; attempt < 5; attempt++) {
+              const r = await generateRoutine(type, skinType, bracket, strategy, sortingStrategy);
+              if (r) {
+                allRoutines.push(r);
+                generatedThisBracket++;
+                break;
+              }
             }
           }
         }

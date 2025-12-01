@@ -390,11 +390,11 @@ export const getRoutinesByProductPriceRange = async (req, res) => {
       });
     }
 
-    // Filter routines to only include those where ALL products are within the price range
+    // Filter routines to only include those where each step has at least one product within the price range
     const filteredRoutines = routines.filter((routine) => {
-      // Check if all products in all steps are within the price range
+      // Check if each step has at least one product within the price range
       return routine.steps.every((step) => {
-        return step.products.every((product) => {
+        return step.products.some((product) => {
           return product.price >= min && product.price <= max;
         });
       });
