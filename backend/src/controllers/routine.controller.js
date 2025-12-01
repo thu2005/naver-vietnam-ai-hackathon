@@ -295,7 +295,7 @@ export const getRoutinesByPriceRange = async (req, res) => {
 
 export const getProductsByPriceRange = async (req, res) => {
   try {
-    const { minPrice, maxPrice, skinType, category, limit } = req.query;
+    const { minPrice, maxPrice, skinType, strategy, name } = req.query;
 
     if (!skinType) {
       return res
@@ -311,49 +311,66 @@ export const getProductsByPriceRange = async (req, res) => {
 
     const min = minPrice ? parseFloat(minPrice) : 0;
     const max = parseFloat(maxPrice);
-    const resultLimit = limit ? parseInt(limit) : 5;
 
     if (isNaN(min) || isNaN(max)) {
       return res.status(400).json({ message: "Invalid price values" });
     }
 
-    if (resultLimit < 1 || resultLimit > 10) {
-      return res
-        .status(400)
-        .json({ message: "limit must be between 1 and 10" });
-    }
-
-    const skinField = `${skinType.toLowerCase()}_skin`;
-
+    // Find all routines for the given skin type
     const query = {
-      [skinField]: true,
-      price: { $gte: min, $lte: max },
+      skinType: skinType.toLowerCase(),
     };
 
-    if (category) {
-      query.category = category;
+    if (strategy) {
+      query.strategy = strategy;
     }
 
-    // Get products sorted by rank (quality - higher is better) and price (higher is better)
-    const products = await Product.find(query)
-      .sort({ rank: -1, price: -1 })
-      .limit(resultLimit)
-      .lean();
+    if (name) {
+      query.name = name;
+    }
 
-    if (products.length === 0) {
+    // Get all routines and populate products
+    let routines = await Routine.find(query).populate("steps.products").lean();
+
+    if (routines.length === 0) {
       return res.status(404).json({
-        message: "No products found for the specified price range and criteria",
+        message: "No routines found for the specified criteria",
       });
     }
 
+    // Filter routines to only include those where ALL products are within the price range
+    const filteredRoutines = routines.filter((routine) => {
+      // Check if all products in all steps are within the price range
+      return routine.steps.every((step) => {
+        return step.products.every((product) => {
+          return product.price >= min && product.price <= max;
+        });
+      });
+    });
+
+    if (filteredRoutines.length === 0) {
+      return res.status(404).json({
+        message:
+          "No routines found where all products are within the specified price range",
+      });
+    }
+
+    // Sort by avgRank (best quality - higher is better) first, then by totalPrice
+    filteredRoutines.sort((a, b) => {
+      if (a.avgRank !== b.avgRank) {
+        return b.avgRank - a.avgRank; // Higher rank is better
+      }
+      return b.totalPrice - a.totalPrice; // Higher price second
+    });
+
     res.status(200).json({
-      products,
-      count: products.length,
+      routines: filteredRoutines,
+      count: filteredRoutines.length,
     });
   } catch (error) {
     console.error("Error in getProductsByPriceRange:", error);
     res
       .status(500)
-      .json({ message: "Error retrieving products", error: error.message });
+      .json({ message: "Error retrieving routines", error: error.message });
   }
 };
