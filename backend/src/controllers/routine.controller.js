@@ -10,7 +10,7 @@ const STRATEGY_ORDER = {
 };
 
 // Helper function to select the single best morning/night pair
-const groupRoutinesByMorningNight = (routines, maxBudget = null) => {
+const groupRoutinesByMorningNight = (routines, maxBudget = null, enforceMaxBudget = true) => {
   // Separate morning and night routines
   const morningRoutines = routines.filter(r => r.name === "morning");
   const nightRoutines = routines.filter(r => r.name === "night");
@@ -24,8 +24,8 @@ const groupRoutinesByMorningNight = (routines, maxBudget = null) => {
       if (morning.strategy === night.strategy && morning.priceBracket === night.priceBracket) {
         const combinedPrice = morning.totalPrice + night.totalPrice;
 
-        // If maxBudget is provided, only include pairs within budget
-        if (maxBudget !== null && combinedPrice > maxBudget) {
+        // If maxBudget is provided and enforceMaxBudget is true, only include pairs within budget
+        if (enforceMaxBudget && maxBudget !== null && combinedPrice > maxBudget) {
           continue;
         }
 
@@ -448,8 +448,8 @@ export const getRoutinesByProductPriceRange = async (req, res) => {
       });
     }
 
-    // Get the best morning/night pair (sorted by closeness to max budget)
-    const bestPair = groupRoutinesByMorningNight(filteredRoutines, max);
+    // Get the best morning/night pair (sorted by closeness to max budget, but don't enforce it)
+    const bestPair = groupRoutinesByMorningNight(filteredRoutines, max, false);
 
     if (!bestPair) {
       return res.status(404).json({
