@@ -856,7 +856,7 @@ const RoutineRecommendations = () => {
       <div className="min-h-screen bg-gradient-to-br from-pink-50/30 via-white to-teal-50/30">
         <Header />
 
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12 min-h-[calc(100vh-80px)]">
           {/* Back to Profile Button */}
           {isViewingFromProfile && (
             <div className="mb-6">
@@ -874,8 +874,8 @@ const RoutineRecommendations = () => {
           )}
 
           {/* Page Header */}
-          <div className="text-center mb-3">
-            <div className="flex items-center justify-center space-x-3 mb-4">
+          <div className="text-center mb-8 lg:mb-12">
+            <div className="flex items-center justify-center space-x-3 mb-6">
               <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center shadow-glass">
                 <Icon name="Calendar" size={24} color="white" />
               </div>
@@ -898,7 +898,7 @@ const RoutineRecommendations = () => {
 
           {/* Filter Controls */}
           {!isViewingFromProfile && (
-            <div className="mt-0">
+            <div className="mt-4 mb-8 lg:mb-10">
               <FilterControls
                 routineType={routineType}
                 setRoutineType={setRoutineType}
@@ -915,7 +915,7 @@ const RoutineRecommendations = () => {
 
           {/* CTA Button */}
           {!isViewingFromProfile && (
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-10">
+            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-12 lg:mb-16 py-8">
               <Button
                 variant="default"
                 size="lg"
@@ -986,7 +986,7 @@ const RoutineRecommendations = () => {
               )}
 
               {/* Routine Cards */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
                 <RoutineCard
                   title="Morning Routine"
                   timeOfDay="morning"
