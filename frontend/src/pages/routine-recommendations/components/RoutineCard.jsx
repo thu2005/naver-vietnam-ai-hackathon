@@ -57,46 +57,48 @@ const RoutineCard = ({
         </div>
       </div>
       <div className="space-y-3">
-        {steps?.map((step, index) => (
-          <div
-            key={step?.id}
-            className=" bg-white/40 rounded-2xl group cursor-pointer"
-            onClick={() => onCategoryClick(step)}
-          >
-            <div className="glass-button p-4 rounded-lg hover:scale-[1.02] transition-all duration-200">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="flex-shrink-0 w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center text-white text-sm font-medium">
-                    {index + 1}
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-medium text-foreground group-hover:text-primary transition-colors">
-                      {step?.category}
-                    </h4>
-                    <p className="text-sm text-muted-foreground font-caption">
-                      {step?.description}
-                    </p>
-                    <div className="flex items-center space-x-4 mt-1">
-                      <span className="text-xs text-muted-foreground flex items-center space-x-1">
-                        <Icon name="Clock" size={12} />
-                        <span>{step?.timing || "N/A"}</span>
-                      </span>
-                      <span className="text-xs text-muted-foreground flex items-center space-x-1">
-                        <Icon name="Target" size={12} />
-                        <span>{step?.purpose || "N/A"}</span>
-                      </span>
+        {steps
+          ?.filter((step) => step?.category?.toLowerCase() !== "sunscreen")
+          ?.map((step, index) => (
+            <div
+              key={step?.id}
+              className=" bg-white/40 rounded-2xl group cursor-pointer"
+              onClick={() => onCategoryClick(step)}
+            >
+              <div className="glass-button p-4 rounded-lg hover:scale-[1.02] transition-all duration-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="flex-shrink-0 w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center text-white text-sm font-medium">
+                      {index + 1}
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-medium text-foreground group-hover:text-primary transition-colors">
+                        {step?.category}
+                      </h4>
+                      <p className="text-sm text-muted-foreground font-caption">
+                        {step?.description}
+                      </p>
+                      <div className="flex items-center space-x-4 mt-1">
+                        <span className="text-xs text-muted-foreground flex items-center space-x-1">
+                          <Icon name="Clock" size={12} />
+                          <span>{step?.timing || "N/A"}</span>
+                        </span>
+                        <span className="text-xs text-muted-foreground flex items-center space-x-1">
+                          <Icon name="Target" size={12} />
+                          <span>{step?.purpose || "N/A"}</span>
+                        </span>
+                      </div>
                     </div>
                   </div>
+                  <Icon
+                    name="ChevronRight"
+                    size={20}
+                    className="text-muted-foreground group-hover:text-primary transition-colors"
+                  />
                 </div>
-                <Icon
-                  name="ChevronRight"
-                  size={20}
-                  className="text-muted-foreground group-hover:text-primary transition-colors"
-                />
               </div>
             </div>
-          </div>
-        ))}
+          ))}
       </div>
       <div className="mt-auto pt-4 border-t border-white/20">
         <div className="flex items-center justify-between text-sm text-muted-foreground">
@@ -105,6 +107,9 @@ const RoutineCard = ({
             <span>
               Total time:{" "}
               {steps
+                ?.filter(
+                  (step) => step?.category?.toLowerCase() !== "sunscreen"
+                )
                 ?.reduce((total, step) => {
                   const timing = step?.timing || "0";
                   if (timing.includes("seconds")) {
@@ -120,7 +125,14 @@ const RoutineCard = ({
           </span>
           <span className="flex items-center space-x-1">
             <Icon name="Layers" size={14} />
-            <span>{steps?.length} steps</span>
+            <span>
+              {
+                steps?.filter(
+                  (step) => step?.category?.toLowerCase() !== "sunscreen"
+                )?.length
+              }{" "}
+              steps
+            </span>
           </span>
         </div>
       </div>

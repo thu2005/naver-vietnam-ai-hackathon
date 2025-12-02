@@ -32,37 +32,41 @@ const Sunscreen = ({ onOpenSuggestions, uvIndex, uvLevel, isLoading }) => {
       }}
     >
       {/* Header */}
-      <div className="flex items-center space-x-3 mb-4 relative">
-        <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
-          <Icon name="Sun" size={20} className="text-white" />
-        </div>
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <div className="flex items-center space-x-3 flex-1 min-w-0">
+          <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center flex-shrink-0">
+            <Icon name="Sun" size={20} className="text-white" />
+          </div>
 
-        <div>
-          <h3 className="text-lg font-heading font-semibold text-foreground">
-            Sunscreen
-          </h3>
-          <p className="text-sm text-muted-foreground font-caption">
-            Sunscreen recommendations based on current UV index
-          </p>
-        </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="text-lg font-heading font-semibold text-foreground">
+                Sunscreen
+              </h3>
 
-        {/* Badge UV */}
-        <div
-          className="absolute top-1/2 right-0 -translate-y-1/2 px-4 py-2 rounded-3xl text-xs font-medium text-foreground border border-white/10 shadow-sm"
-          style={{
-            background: getUVColor(),
-          }}
-        >
-          {isLoading ? (
-            <span className="flex items-center gap-2">
-              <Icon name="Loader" size={12} className="animate-spin" />
-              Loading UV...
-            </span>
-          ) : uvIndex !== null ? (
-            `UV: ${uvIndex} - ${uvLevel}`
-          ) : (
-            "UV: --"
-          )}
+              {/* Badge UV */}
+              <div
+                className="px-4 py-2 rounded-3xl text-xs font-medium text-foreground border border-white/10 shadow-sm whitespace-nowrap flex-shrink-0"
+                style={{
+                  background: getUVColor(),
+                }}
+              >
+                {isLoading ? (
+                  <span className="flex items-center gap-2">
+                    <Icon name="Loader" size={12} className="animate-spin" />
+                    Loading UV...
+                  </span>
+                ) : uvIndex !== null ? (
+                  `UV: ${uvIndex} - ${uvLevel}`
+                ) : (
+                  "UV: --"
+                )}
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground font-caption mt-1">
+              Sunscreen recommendations based on current UV index
+            </p>
+          </div>
         </div>
       </div>
 
