@@ -497,16 +497,53 @@ export const getPriceRanges = async (req, res) => {
     // Process each strategy in parallel for better performance
     await Promise.all(
       strategies.map(async (strategy) => {
-        // Aggregation for total routine price (min/max of totalPrice)
+        // Aggregation for total routine price (min/max of morning+night pairs)
+        // This joins morning routines with night routines of same strategy and priceBracket
         const totalPriceAggregation = await Routine.aggregate([
-          { $match: { skinType: normalizedSkinType, strategy: strategy } },
+          // Get all morning routines for this strategy
+          { $match: { skinType: normalizedSkinType, strategy: strategy, name: 'morning' } },
+          // Join with night routines of same strategy and priceBracket
+          {
+            $lookup: {
+              from: 'routines',
+              let: {
+                morningStrategy: '$strategy',
+                morningBracket: '$priceBracket',
+                morningSkinType: '$skinType'
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        { $eq: ['$name', 'night'] },
+                        { $eq: ['$strategy', '$$morningStrategy'] },
+                        { $eq: ['$priceBracket', '$$morningBracket'] },
+                        { $eq: ['$skinType', '$$morningSkinType'] }
+                      ]
+                    }
+                  }
+                }
+              ],
+              as: 'nightRoutines'
+            }
+          },
+          // Unwind to get individual pairs
+          { $unwind: '$nightRoutines' },
+          // Calculate combined price
+          {
+            $project: {
+              combinedPrice: { $add: ['$totalPrice', '$nightRoutines.totalPrice'] }
+            }
+          },
+          // Get min/max of combined prices
           {
             $group: {
               _id: null,
-              minTotalPrice: { $min: "$totalPrice" },
-              maxTotalPrice: { $max: "$totalPrice" },
-            },
-          },
+              minTotalPrice: { $min: '$combinedPrice' },
+              maxTotalPrice: { $max: '$combinedPrice' }
+            }
+          }
         ]);
 
         // Aggregation for individual product prices
