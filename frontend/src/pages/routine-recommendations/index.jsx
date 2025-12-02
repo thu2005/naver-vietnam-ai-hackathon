@@ -168,7 +168,7 @@ const RoutineRecommendations = () => {
       const filters = {
         uvIndex: uvIndex?.toString() || "0",
         skinType: skinType || "normal",
-        priceRange: priceRange || "budget-friendly",
+        maxPrice: maxPrice || 5000000,
       };
       const data = await ApiService.getProductsByUVIndex(filters);
       // Transform products with rating and image (limit to top 5)

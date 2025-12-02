@@ -113,11 +113,11 @@ class ApiService {
     return this.request(`/products/${productId}`);
   }
 
-  async getProductsByUVIndex({ uvIndex, skinType, priceRange }) {
+  async getProductsByUVIndex({ uvIndex, skinType, maxPrice }) {
     const params = new URLSearchParams({
       uvIndex,
       skinType,
-      priceRange,
+      ...(maxPrice && { maxPrice }),
     }).toString();
     return this.request(`/products/uv?${params}`);
   }
