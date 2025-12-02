@@ -44,7 +44,11 @@ const RoutineRecommendations = () => {
   const [savedRoutineData, setSavedRoutineData] = useState(null);
 
   // Fetch UV Index based on user location
-  const fetchUVIndex = async () => {
+  const fetchUVIndex = async (maxPriceOverride) => {
+    console.log(
+      "🔍 fetchUVIndex called with maxPriceOverride:",
+      maxPriceOverride
+    );
     setIsLoadingUV(true);
     try {
       // Helper to fetch weather and update UV info
@@ -66,7 +70,16 @@ const RoutineRecommendations = () => {
           localStorage.getItem("userProfile") || "{}"
         );
         const skinType = userProfile?.skinType?.toLowerCase() || "normal";
-        fetchSunscreenProducts(Math.round(currentUV), skinType);
+        const priceToUse =
+          maxPriceOverride !== undefined ? maxPriceOverride : maxPrice;
+        console.log("🔍 Calling fetchSunscreenProducts with:", {
+          uv: Math.round(currentUV),
+          skinType,
+          priceToUse,
+          maxPriceOverride,
+          maxPrice,
+        });
+        fetchSunscreenProducts(Math.round(currentUV), skinType, priceToUse);
       };
 
       // Get user location
@@ -95,7 +108,7 @@ const RoutineRecommendations = () => {
 
   // Fetch UV index when results are shown
   useEffect(() => {
-    if (showResults) {
+    if (showResults && !isViewingFromProfile) {
       fetchUVIndex();
     }
   }, [showResults]);
@@ -116,8 +129,13 @@ const RoutineRecommendations = () => {
         setRoutineType(routineData.routineType || "minimal");
         setPriceRange(routineData.priceRange || "budget-friendly");
 
-        // Set routines data - transform from saved format to display format
-        // SavedRoutine structure: { morningRoutine: { steps: [...] }, eveningRoutine: { steps: [...] } }
+        // Restore maxPrice from saved data before fetching UV/sunscreen
+        const savedMaxPrice = routineData.maxPrice || 5000000;
+        console.log("🔍 Saved maxPrice from routine:", savedMaxPrice);
+        if (routineData.maxPrice) {
+          setMaxPrice(routineData.maxPrice);
+        }
+
         if (routineData.morningRoutine) {
           console.log(
             "Morning routine from saved data:",
@@ -142,7 +160,8 @@ const RoutineRecommendations = () => {
         }
 
         // Fetch UV index when viewing from profile
-        fetchUVIndex();
+        // Pass savedMaxPrice directly to ensure correct price filter
+        fetchUVIndex(savedMaxPrice);
 
         // Clear the data from localStorage after loading
         localStorage.removeItem("viewRoutineData");
@@ -163,13 +182,15 @@ const RoutineRecommendations = () => {
   };
 
   // Fetch sunscreen products from backend using UV index and skin type
-  const fetchSunscreenProducts = async (uvIndex, skinType) => {
+  const fetchSunscreenProducts = async (uvIndex, skinType, maxPriceParam) => {
     try {
       const filters = {
         uvIndex: uvIndex?.toString() || "0",
         skinType: skinType || "normal",
-        maxPrice: maxPrice || 5000000,
+        maxPrice:
+          maxPriceParam !== undefined ? maxPriceParam : maxPrice || 5000000,
       };
+      console.log("🔍 fetchSunscreenProducts filters:", filters);
       const data = await ApiService.getProductsByUVIndex(filters);
       // Transform products with rating and image (limit to top 5)
       const transformedProducts = data.slice(0, 5).map((product) => ({
@@ -231,6 +252,7 @@ const RoutineRecommendations = () => {
       // Save complete routine to database with full product details
       console.log("Saving routine - Morning steps:", morningSteps);
       console.log("Saving routine - Night steps:", nightSteps);
+      console.log("🔍 Saving with maxPrice:", maxPrice);
 
       const completeRoutineData = {
         userId,
@@ -238,6 +260,7 @@ const RoutineRecommendations = () => {
         routineType,
         skinType,
         priceRange,
+        maxPrice: maxPrice || 5000000,
         uvIndex: uvIndex || null,
         location: "Ho Chi Minh City",
         morningRoutine: {
@@ -885,6 +908,7 @@ const RoutineRecommendations = () => {
                 setPriceMode={setPriceMode}
                 maxPrice={maxPrice}
                 setMaxPrice={setMaxPrice}
+                isViewingFromProfile={isViewingFromProfile}
               />
             </div>
           )}

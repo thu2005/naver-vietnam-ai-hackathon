@@ -66,6 +66,10 @@ const savedRoutineSchema = new mongoose.Schema(
       required: true,
       enum: ["budget-friendly", "mid-range", "premium"],
     },
+    maxPrice: {
+      type: Number,
+      default: 5000000,
+    },
     uvIndex: {
       type: Number,
       min: 0,
