@@ -498,7 +498,7 @@ export const getPriceRanges = async (req, res) => {
     await Promise.all(
       strategies.map(async (strategy) => {
         // Aggregation for total routine price (min/max of morning+night pairs)
-        // This joins morning routines with night routines of same strategy and priceBracket
+        // This joins morning routines with night routines and calculates both min and max combinations
         const totalPriceAggregation = await Routine.aggregate([
           // Get all morning routines for this strategy
           { $match: { skinType: normalizedSkinType, strategy: strategy, name: 'morning' } },
@@ -523,25 +523,80 @@ export const getPriceRanges = async (req, res) => {
                       ]
                     }
                   }
+                },
+                // Calculate max possible price for night routine
+                { $unwind: '$steps' },
+                {
+                  $lookup: {
+                    from: 'products',
+                    localField: 'steps.products',
+                    foreignField: '_id',
+                    as: 'stepProducts'
+                  }
+                },
+                { $unwind: '$stepProducts' },
+                {
+                  $group: {
+                    _id: { routineId: '$_id', stepName: '$steps.name' },
+                    maxPriceInStep: { $max: '$stepProducts.price' },
+                    nightTotalPrice: { $first: '$totalPrice' }
+                  }
+                },
+                {
+                  $group: {
+                    _id: '$_id.routineId',
+                    nightMinTotal: { $first: '$nightTotalPrice' },
+                    nightMaxTotal: { $sum: '$maxPriceInStep' }
+                  }
                 }
               ],
               as: 'nightRoutines'
             }
           },
-          // Unwind to get individual pairs
-          { $unwind: '$nightRoutines' },
-          // Calculate combined price
+          // Only keep morning routines that have matching night routines
+          { $match: { 'nightRoutines.0': { $exists: true } } },
+          // Calculate max possible price for morning routine
+          { $unwind: '$steps' },
           {
-            $project: {
-              combinedPrice: { $add: ['$totalPrice', '$nightRoutines.totalPrice'] }
+            $lookup: {
+              from: 'products',
+              localField: 'steps.products',
+              foreignField: '_id',
+              as: 'stepProducts'
             }
           },
-          // Get min/max of combined prices
+          { $unwind: '$stepProducts' },
+          {
+            $group: {
+              _id: { routineId: '$_id', stepName: '$steps.name' },
+              maxPriceInStep: { $max: '$stepProducts.price' },
+              morningTotalPrice: { $first: '$totalPrice' },
+              nightRoutines: { $first: '$nightRoutines' }
+            }
+          },
+          {
+            $group: {
+              _id: '$_id.routineId',
+              morningMinTotal: { $first: '$morningTotalPrice' },
+              morningMaxTotal: { $sum: '$maxPriceInStep' },
+              nightRoutines: { $first: '$nightRoutines' }
+            }
+          },
+          // Unwind night routines to create pairs
+          { $unwind: '$nightRoutines' },
+          // Calculate combined min and max for each pair
+          {
+            $project: {
+              combinedMinPrice: { $add: ['$morningMinTotal', '$nightRoutines.nightMinTotal'] },
+              combinedMaxPrice: { $add: ['$morningMaxTotal', '$nightRoutines.nightMaxTotal'] }
+            }
+          },
+          // Get overall min/max
           {
             $group: {
               _id: null,
-              minTotalPrice: { $min: '$combinedPrice' },
-              maxTotalPrice: { $max: '$combinedPrice' }
+              minTotalPrice: { $min: '$combinedMinPrice' },
+              maxTotalPrice: { $max: '$combinedMaxPrice' }
             }
           }
         ]);
