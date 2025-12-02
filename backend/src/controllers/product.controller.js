@@ -128,7 +128,7 @@ export const listProducts = async (req, res) => {
 
 export const getProductsByUVIndex = async (req, res) => {
   try {
-    const { uvIndex, skinType, priceRange } = req.query;
+    const { uvIndex, skinType, maxPrice } = req.query;
     if (uvIndex === undefined) {
       return res.status(400).json({ message: "UV Index is required" });
     }
@@ -144,24 +144,39 @@ export const getProductsByUVIndex = async (req, res) => {
       });
     }
 
-    let query = {};
-    if (uvIndex >= 3) {
-      query = { category: "Sunscreen", spf: { $gte: 30 }, [skinField]: true };
-    } else {
-      query = { category: "Sunscreen", [skinField]: true };
-    }
+    const uvValue = parseFloat(uvIndex);
+    let query = { category: "Sunscreen", [skinField]: true };
 
-    if (priceRange) {
-      if (priceRange === "budget-friendly") {
-        query.price = { $lte: 500000 };
-      } else if (priceRange === "mid-range") {
-        query.price = { $gte: 500000, $lte: 1500000 };
-      } else if (priceRange === "premium") {
-        query.price = { $gte: 1500000 };
+    // UV index ranges with SPF filtering
+    // UV 0-2 (Low): Any SPF acceptable
+    // UV 3-10 (Moderate to Very High): SPF 30+ required (prioritization handled by sorting)
+    // UV 11+ (Extreme): Only SPF 50+
+    if (uvValue >= 11) {
+      query.spf = { $gte: 50 };
+    } else if (uvValue >= 3) {
+      query.spf = { $gte: 30 };
+    }
+    // For UV < 3, no SPF filter needed
+
+    // Apply price range filters if provided
+    if (maxPrice !== undefined) {
+      query.price = {};
+      if (maxPrice !== undefined) {
+        query.price.$lte = parseFloat(maxPrice);
       }
     }
 
-    let products = await Product.find(query).sort({ rank: -1 });
+    // Sort strategy based on UV index
+    let sortCriteria = {};
+    if (uvValue >= 6) {
+      // For high UV (6+), prioritize higher SPF, then rank
+      sortCriteria = { spf: -1, rank: -1 };
+    } else {
+      // For moderate/low UV, prioritize rank
+      sortCriteria = { rank: -1 };
+    }
+
+    let products = await Product.find(query).sort(sortCriteria);
 
     // Filter out products with missing name/brand
     products = products.filter((p) => p.name && p.brand);
@@ -195,6 +210,63 @@ export const getProductsByUserSkinType = async (req, res) => {
     res.status(500).json({
       message: "Error retrieving products by skin type",
       error: error.message,
+    });
+  }
+};
+
+export const getProductPriceRanges = async (req, res) => {
+  try {
+    const { skinType } = req.query;
+    if (!skinType) {
+      return res
+        .status(400)
+        .json({ message: "skinType query parameter is required" });
+    }
+
+    const normalizedSkinType = skinType.toLowerCase();
+    const skinField = skinFieldMap[normalizedSkinType];
+
+    if (!skinField) {
+      return res.status(400).json({
+        message:
+          "Invalid skin type. Must be one of: dry, oily, combination, normal, sensitive",
+      });
+    }
+
+    // Get price ranges for sunscreen products
+    const priceAggregation = await Product.aggregate([
+      {
+        $match: {
+          category: "Sunscreen",
+          [skinField]: true,
+          price: { $exists: true, $gt: 0 }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          minPrice: { $min: "$price" },
+          maxPrice: { $max: "$price" }
+        }
+      }
+    ]);
+
+    const priceRange = {
+      min: priceAggregation[0]?.minPrice || 0,
+      max: priceAggregation[0]?.maxPrice || 0
+    };
+
+    const response = {
+      skinType: normalizedSkinType,
+      priceRange
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error("Error in getProductPriceRanges:", error);
+    res.status(500).json({
+      message: "Error retrieving product price ranges",
+      error: error.message
     });
   }
 };
