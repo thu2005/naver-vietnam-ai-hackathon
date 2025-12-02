@@ -537,11 +537,11 @@ const ProductAnalysis = () => {
   };
 
   const handleAnalyzeProduct = () => {
-    if (uploadedImages?.front || uploadedImages?.back) {
+    if (uploadedImages?.front && uploadedImages?.back) {
       // Clear any previous error
       setError(null);
 
-      if (useRealAPI && (uploadedFiles?.front || uploadedFiles?.back)) {
+      if (useRealAPI && uploadedFiles?.front && uploadedFiles?.back) {
         analyzeProductWithAPI();
       } else {
         simulateAnalysis();
@@ -558,7 +558,7 @@ const ProductAnalysis = () => {
     setError(null);
   };
 
-  const canAnalyze = uploadedImages?.front || uploadedImages?.back;
+  const canAnalyze = uploadedImages?.front && uploadedImages?.back;
 
   return (
     <div className="min-h-screen bg-background">
