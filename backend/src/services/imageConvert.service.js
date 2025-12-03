@@ -34,7 +34,7 @@ export async function convertImageToPng(imagePath) {
         throw new Error("heic-convert library is required to convert HEIC images. Please install it with 'npm install heic-convert'.");
       }
       inputBuffer = fs.readFileSync(imagePath);
-      shouldScaleDown = inputBuffer.length > 3 * 1024 * 1024;
+      shouldScaleDown = inputBuffer.length > 1 * 1024 * 1024;
       buffer = await heicConvert({
         buffer: inputBuffer,
         format: "PNG",
@@ -72,7 +72,7 @@ export async function convertImageToPng(imagePath) {
       }
     } else {
       inputBuffer = fs.readFileSync(imagePath);
-      shouldScaleDown = inputBuffer.length > 3 * 1024 * 1024;
+      shouldScaleDown = inputBuffer.length > 1 * 1024 * 1024;
       if (shouldScaleDown) {
         buffer = await sharp(imagePath)
           .resize({ width: maxDimension, height: maxDimension, fit: 'inside', withoutEnlargement: true })
