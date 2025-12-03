@@ -14,30 +14,32 @@ const OCR_CONFIG = {
 
 export async function callNaverOcr({ secretKey, apiUrl, imagePath, imageFormat = OCR_CONFIG.DEFAULT_FORMAT, lang = OCR_CONFIG.DEFAULT_LANG }) {
   if (!secretKey || !apiUrl || !imagePath) throw new Error('Missing required parameters: secretKey, apiUrl, and imagePath are required');
-  
+
+  let detectedFormat = 'png';
+
   // Read image file and encode to base64
   const imageBuffer = fs.readFileSync(imagePath);
   const base64Data = imageBuffer.toString('base64');
-  
+
   const message = {
     version: OCR_CONFIG.VERSION,
     requestId: `${Date.now()}`,
     timestamp: Date.now(),
-    images: [{ format: imageFormat, name: path.basename(imagePath), data: base64Data }],
+    images: [{ format: detectedFormat, name: path.basename(imagePath), data: base64Data }],
     lang: lang
   };
-  
+
   // Log request details for debugging
 //   console.log('[OCR] Request details:', {
 //     apiUrl,
 //     imagePath,
-//     imageFormat,
+//     imageFormat: detectedFormat,
 //     lang,
 //     message,
 //     messageString: JSON.stringify(message),
 //     headers: { 'X-OCR-SECRET': secretKey, 'Content-Type': 'application/json' }
 //   });
-  
+
   try {
     const response = await axios({
       method: 'post',
