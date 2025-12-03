@@ -25,20 +25,36 @@ export async function convertImageToPng(imagePath) {
   const pngPath = path.join(dir, base + ".png");
   // Only convert if PNG doesn't already exist
   if (!fs.existsSync(pngPath)) {
+    let buffer;
     if ([".heic", ".heif"].includes(ext)) {
       if (!heicConvert) {
         throw new Error("heic-convert library is required to convert HEIC images. Please install it with 'npm install heic-convert'.");
       }
       const inputBuffer = fs.readFileSync(imagePath);
-      const outputBuffer = await heicConvert({
+      buffer = await heicConvert({
         buffer: inputBuffer,
         format: "PNG",
         quality: 1
       });
-      await fs.promises.writeFile(pngPath, outputBuffer);
     } else {
-      await sharp(imagePath).png().toFile(pngPath);
+      // Try resizing and compressing until under 300KB
+      let width = 1024;
+      let quality = 80;
+      let compressionLevel = 9;
+      let attempts = 0;
+      do {
+        buffer = await sharp(imagePath)
+          .resize({ width, height: width, fit: 'inside', withoutEnlargement: true })
+          .png({ quality, compressionLevel })
+          .toBuffer();
+        if (buffer.length <= 300 * 1024) break;
+        // Reduce width and quality for next attempt
+        width = Math.max(256, Math.floor(width * 0.8));
+        quality = Math.max(30, Math.floor(quality * 0.8));
+        attempts++;
+      } while (buffer.length > 300 * 1024 && attempts < 6);
     }
+    await fs.promises.writeFile(pngPath, buffer);
   }
   return pngPath;
 }
