@@ -36,6 +36,24 @@ export async function convertImageToPng(imagePath) {
         format: "PNG",
         quality: 1
       });
+      // Compress HEIC-converted images to below 300KB
+      if (buffer.length > 300 * 1024) {
+        let width = 1024;
+        let quality = 80;
+        let compressionLevel = 9;
+        let attempts = 0;
+        do {
+          buffer = await sharp(buffer)
+            .resize({ width, height: width, fit: 'inside', withoutEnlargement: true })
+            .png({ quality, compressionLevel })
+            .toBuffer();
+          if (buffer.length <= 300 * 1024) break;
+          // Reduce width and quality for next attempt
+          width = Math.max(256, Math.floor(width * 0.8));
+          quality = Math.max(30, Math.floor(quality * 0.8));
+          attempts++;
+        } while (buffer.length > 300 * 1024 && attempts < 10);
+      }
     } else {
       // Try resizing and compressing until under 300KB
       let width = 1024;
@@ -52,7 +70,7 @@ export async function convertImageToPng(imagePath) {
         width = Math.max(256, Math.floor(width * 0.8));
         quality = Math.max(30, Math.floor(quality * 0.8));
         attempts++;
-      } while (buffer.length > 300 * 1024 && attempts < 6);
+      } while (buffer.length > 300 * 1024 && attempts < 10);
     }
     await fs.promises.writeFile(pngPath, buffer);
   }
