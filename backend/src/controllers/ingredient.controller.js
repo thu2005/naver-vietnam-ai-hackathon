@@ -51,7 +51,6 @@ export const productAnalyzeFromImages = async (req, res) => {
     // Get OCR text from both images
     const frontOcrText = getOcrTextFromData(frontOcrData);
     const backOcrText = getOcrTextFromData(backOcrData);
-    console.log(backOcrText)
 
     const startExtract = Date.now();
     const [ingredientResult, productInfo] = await Promise.all([
